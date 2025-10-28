@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SustainWear Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="auth-container">
+    <h1>Welcome back</h1>
+
+    <form id="loginForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required>
+
+      <button type="submit">Log in</button>
+      <p class="switch-link">Don’t have an account?
+        <a href="signup.html">Sign up here</a>
+      </p>
+    </form>
+
+    <p id="loginMessage"></p>
+  </div>
+
+  <script src="auth.js"></script>
+</body>
+</html>

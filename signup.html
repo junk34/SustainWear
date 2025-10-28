@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SustainWear Sign up</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="auth-container">
+    <h1>Create account</h1>
+
+    <form id="signupForm">
+      <label for="name">Full name</label>
+      <input type="text" id="name" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required>
+
+      <label for="role">register as</label>
+      <select id="role" required>
+        <option value="">Select role</option>
+        <option value="donor">Donor</option>
+        <option value="staff">Charity staff</option>
+      </select>
+
+      <button type="submit">Sign up</button>
+      <p class="switch-link">Already have an account?
+        <a href="login.html">Log in here</a>
+      </p>
+    </form>
+
+    <p id="signupMessage"></p>
+  </div>
+<script src="auth.js"> </script>
+</body>
+</html>
