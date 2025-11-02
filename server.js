@@ -32,12 +32,10 @@ app.post('/signup', (req, res) => {
   }
 
   // only donors work rn so remove this when doing staff registering
-  if (role !== 'donor') {
-    return res.json({ message: 'Charity staff not yet done' });
-  }
+  let status = role === 'donor' ? 'approved' : 'pending';
+  
 
-  const status = 'approved'; 
-
+  
   db.run(
     `INSERT INTO users (name, email, password, role, status)
      VALUES (?, ?, ?, ?, ?)`,
@@ -78,7 +76,48 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('Server is running');
+  res.send('Server is running'); 
 });
+
+app.get('/admin/pending-staff', (req, res) => {
+    db.all(
+      `SELECT id, name, email FROM users WHERE role = 'staff' AND status = 'pending'`,
+      [],
+      (err, rows) => {
+        if (err) return res.json({ message: 'Database error.' });
+        res.json(rows);
+
+      }
+
+
+      );
+    });
+  
+    app.post('/admin/approve', (req, res) => {
+      const { id } = req.body;
+      db.run(
+        `UPDATE users SET status = 'approved' WHERE id = ?`,
+        [id],
+        function (err) {
+          if (err) return res.json({ message: 'Database error.' });
+          res.json({ message: 'Staff approved.' });
+        }
+
+      );
+    });
+    
+    app.post('/admin/reject', (req, res) => {
+   const { id } = req.body;
+   db.run(`DELETE FROM users WHERE id = ?`, [id], function (err) {
+  if (err) return res.json({message:'database.'});
+  res.json({ message: 'Staff rejected and removed.' });
+
+});
+});
+
+
+
+
+app.get('/admin/pending-staff, (req, res) =>')
 
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
