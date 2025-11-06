@@ -2,9 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Donor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate Item - SustainWear</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello world!</h1>
+
+<div class="donation-container">
+  <h1>Donate Clothing</h1>
+
+  <label class="image-upload">
+    <p>Upload Image (camera or gallery)</p>
+    <input type="file" accept="image/*" id="donationImage">
+  </label>
+  <img id="preview" style="display:none; width: 160px; border-radius:6px; margin-top:10px;">
+
+  <label>Category</label>
+  <select id="category">
+    <option value="">Select Category</option>
+    <option value="outerwear">Outerwear</option>
+    <option value="tops">Tops</option>
+    <option value="bottoms">Bottoms</option>
+    <option value="shoes">Shoes</option>
+    <option value="accessories">Accessories</option>
+  </select>
+
+  <label>Type</label>
+  <select id="subcategory"></select>
+
+  <label>Size</label>
+  <select id="size">
+    <option value="">Select Size</option>
+    <option>XS</option>
+    <option>S</option>
+    <option>M</option>
+    <option>L</option>
+    <option>XL</option>
+    <option>XXL</option>
+  </select>
+
+  <label>Description (condition, notes, etc.)</label>
+  <textarea id="description" maxlength="200" placeholder="e.g. Small stain on left sleeve"></textarea>
+  <p id="charCount">0/200</p>
+
+  <button id="submitDonation">Confirm Donation</button>
+  <p id="donationMsg"></p>
+</div>
+
+<script src="donor.js"></script>
+
 </body>
 </html>
