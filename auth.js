@@ -15,12 +15,12 @@ if (signupForm) {
 
     try {
       const res = await fetch('http://localhost:2000/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
 
-      const result = await res.json();
+    const result = await res.json();
       if (signupMsgEl) signupMsgEl.textContent = result.message || 'Signup successful.';
       signupForm.reset();
     } catch (error) {
@@ -45,17 +45,19 @@ if (loginForm) {
 
     try {
       const res = await fetch('http://localhost:2000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
 
-      const result = await res.json();
+    const result = await res.json();
 
-      if (result.role === 'donor' && result.status === 'approved') {
+   if (result.role === 'donor' && result.status === 'approved') {
         window.location.href = 'donor.html';
       } else if (result.role === 'staff' && result.status === 'approved') {
         window.location.href = 'charity staff.html';
+      } else if (result.role === 'admin' && result.status === 'approved') {
+        window.location.href = 'admin.html';
       } else if (result.status === 'pending') {
         if (loginMsgEl) loginMsgEl.textContent = 'Your account is still pending approval.';
       } else if (result.status === 'rejected') {
@@ -69,7 +71,6 @@ if (loginForm) {
     }
   });
 }
-
 
 // fetch pending staff requests and display them in the admin dashboard
 function refreshStaffList() {}
@@ -133,3 +134,4 @@ function rejectStaff(id) {
     .catch(err => console.error('Rejection failed:', err));
 
 }
+   
