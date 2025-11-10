@@ -115,6 +115,12 @@ app.get('/admin/pending-staff', (req, res) => {
 });
 });
 
+app.post('/debug/users', (req, res) => {
+  db.all(`SELECT * FROM users`, [], (err, rows) => {
+    if (err) return res.json({message:'database.'});
+    res.json(rows);
+  });
+});
 
 
 
