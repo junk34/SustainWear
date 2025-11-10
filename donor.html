@@ -2,9 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Donor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SustainWear - Donate Clothing</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Hello world!</h1>
+
+  <div class="donation-container">
+    <h1>Donate an Item</h1>
+
+    <form id="donationForm">
+
+      <label>Item Photo</label>
+      <input type="file" id="itemImage" accept="image/*">
+
+      <label for="category">Category</label>
+      <select id="category" required>
+        <option value="">Select Category</option>
+        <option value="tops">Tops</option>
+        <option value="outerwear">Outerwear</option>
+        <option value="bottoms">Bottoms</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessories">Accessories</option>
+      </select>
+
+      <label for="subcategory">Type</label>
+      <select id="subcategory" required>
+        <option value="">Select a category first</option>
+      </select>
+
+      <label for="size">Size</label>
+      <select id="size" required>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+      </select>
+
+      <label for="description">Condition / Notes (max 120 characters)</label>
+      <textarea id="description" maxlength="120" placeholder="Example: Slight tear on right sleeve"></textarea>
+      <p id="charCount">0/120</p>
+
+      <button type="submit">Submit Donation</button>
+    </form>
+
+    <p id="donationMessage"></p>
+  </div>
+
+<script>
+  const subcategories = {
+    tops: ["T-Shirt", "Hoodie", "Sweater", "Tank Top", "Blouse", "Other"],
+    outerwear: ["Jacket", "Coat", "Raincoat", "Fleece", "Other"],
+    bottoms: ["Jeans", "Joggers", "Shorts", "Skirt", "Leggings", "Other"],
+    shoes: ["Sneakers", "Boots", "Heels", "Flats", "Sandals", "Other"],
+    accessories: ["Hat", "Scarf", "Jewelry", "Belt", "Other"]
+  };
+
+  const categorySelect = document.getElementById("category");
+  const subcategorySelect = document.getElementById("subcategory");
+
+  categorySelect.addEventListener("change", () => {
+    subcategorySelect.innerHTML = "<option value=''>Select type</option>";
+    const selected = categorySelect.value;
+
+    if (subcategories[selected]) {
+      subcategories[selected].forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.toLowerCase();
+        option.textContent = item;
+        subcategorySelect.appendChild(option);
+      });
+    }
+  });
+
+  const description = document.getElementById("description");
+  const charCount = document.getElementById("charCount");
+
+  description.addEventListener("input", () => {
+    charCount.textContent = `${description.value.length}/120`;
+  });
+</script>
+
 </body>
 </html>
