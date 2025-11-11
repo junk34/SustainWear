@@ -73,28 +73,37 @@ if (loginForm) {
 }
 
 // fetch pending staff requests and display them in the admin dashboard
-function refreshStaffList() {}
+function refreshStaffList() {
 fetch('http://localhost:2000/admin/pending-staff')
-  .then(res => res.json())
-  .then(data => {
-    const list = document.getElementById('staffRequestList');
-    if (!list) return;
-    list.innerHTML = '';
-    data.forEach(user => {
-      const item = document.createElement('li');
-      item.innerHTML = `
-        <strong>${user.name}</strong> (${user.email})
-        <button class="approveStaff" data-user-id="${user_id}">Approve</button>
-        <button class="rejectStaff" data-user-id="${user_id}">Reject</button>
-      `;
-      list.appendChild(item);
+.then(res=> res.json())
+.then(data => {
+  const list = document.getElementById('staffRequestList');
+  if (!list) return;
+  list.innerHTML = '';
+  data.forEach( user=> {
+    const item = document.createElement('li');
+    item.innerHTML = `
+    <strong>${user.name}</strong> (${user.email})
+    <button class="approveStaff" data-user-id="${user.id}">Approve</button>
+    <button class="rejectStaff" data-user-id="${user.id}">Reject</button>
+    `;
+    list.appendChild(item);
     });
-  })
-  .catch(err => {
-    console.error('Error fetching staff requests:', err);
-    const list = document.getElementById('staffRequestList');
-    if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
-  });
+    })
+ 
+   .catch(err => {
+      console.error('Error fetching staff requests:', err);
+      const list = document.getElementById('staffRequestList');
+      if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
+     
+    });
+      
+  }
+  
+     document.addEventListener('DOMContentLoaded', refreshStaffList); 
+
+  
+  
 
 // Event delegation for approve/reject buttons
 document.addEventListener('click', (e) => {
