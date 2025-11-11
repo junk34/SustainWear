@@ -9,9 +9,10 @@ const options = {
 document.getElementById("category").addEventListener("change", function() {
   const cat = this.value;
   const subcat = document.getElementById("subcategory");
-  subcat.innerHTML = "";
 
-  if (!cat) return;
+  subcat.innerHTML = "<option value=''>Select Type</option>";
+
+  if (!cat || !options[cat]) return;
 
   options[cat].forEach(item => {
     let opt = document.createElement("option");
@@ -31,6 +32,7 @@ document.getElementById("description").addEventListener("input", function() {
   document.getElementById("charCount").textContent = `${this.value.length}/200`;
 });
 
-document.getElementById("submitDonation").addEventListener("click", () => {
-  document.getElementById("donationMsg").innerText = "✅ Donation Created (Will be stored in DB soon)";
+document.getElementById("donationForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  document.getElementById("donationMsg").innerText = "✅ Donation Submitted (Database logic coming next)";
 });
