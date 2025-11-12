@@ -73,28 +73,40 @@ if (loginForm) {
 }
 
 // fetch pending staff requests and display them in the admin dashboard
-function refreshStaffList() {}
-fetch('http://localhost:2000/admin/pending-staff')
+function refreshStaffList() {
+  fetch('http://localhost:2000/admin/pending-staff')
   .then(res => res.json())
   .then(data => {
     const list = document.getElementById('staffRequestList');
-    if (!list) return;
+    if  (!list) return;
+
     list.innerHTML = '';
+
+    if (data.length===0) {
+      list.innerHTML = '<li>No pending staff requests.</li>';
+    return;  
+    }
+
     data.forEach(user => {
       const item = document.createElement('li');
       item.innerHTML = `
-        <strong>${user.name}</strong> (${user.email})
-        <button class="approveStaff" data-user-id="${user_id}">Approve</button>
-        <button class="rejectStaff" data-user-id="${user_id}">Reject</button>
-      `;
-      list.appendChild(item);
+       <strong>${user.name}</strong> (${user.email})
+        <button class="approveStaff" data-user-id="${user.id}">Approve</button>
+         <button class="rejectStaff" data-user-id="${user.id}">Reject</button>
+       `;
+       list.appendChild(item);
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching staff requests:', err);
+      const list = document.getElementById('staffRequestList');
+      if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
     });
-  })
-  .catch(err => {
-    console.error('Error fetching staff requests:', err);
-    const list = document.getElementById('staffRequestList');
-    if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
-  });
+  }
+
+  
+      
+    
 
 // Event delegation for approve/reject buttons
 document.addEventListener('click', (e) => {
@@ -114,14 +126,17 @@ function approveStaff(id) {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
+       
   })
-    .then(res => res.json())
-    .then(result => {
-      console.log('Approval result:', result);
-      // optionally refresh the list or remove the item from DOM
-    })
-    .catch(err => console.error('Approval failed:', err));
+
+  .then(res => res.json())
+  .then(result => {
+    console.log('Approval result:', result);
+    refreshStaffList();
+  })
+  .catch(err => console.error('Approval failed:', err));
 }
+
 
 // reject staff
 function rejectStaff(id) {
@@ -130,8 +145,20 @@ function rejectStaff(id) {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
   })
-   .then(() => location.reload())
-    .catch(err => console.error('Rejection failed:', err));
+  .then(res => res.json())
+  .then(result => {
+    console.log('Rejection result:', result);
+    refreshStaffList();
+  })
 
+
+  .catch(err => console.error('Rejection failed:', err));       
 }
-   
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.endsWith('admin.html')) {
+    refreshStaffList();
+  }
+}); 
+
+
