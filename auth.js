@@ -1,3 +1,4 @@
+// SIGNUP FORM HANDLER
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
   signupForm.addEventListener('submit', async (e) => {
@@ -30,8 +31,8 @@ if (signupForm) {
 }
 
 
-const loginForm = document.getElementById('loginForm');
 
+const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -51,23 +52,39 @@ if (loginForm) {
       });
 
       const result = await res.json();
+      console.log("LOGIN RESULT:", result);
+
 
       if (result.name) {
         localStorage.setItem("loggedInName", result.name);
       }
+
       if (result.role === 'donor' && result.status === 'approved') {
-        window.location.href = 'donor.html';
-      } else if (result.role === 'staff' && result.status === 'approved') {
-        window.location.href = 'charity staff.html';
-      } else if (result.role === 'admin' && result.status === 'approved') {
-        window.location.href = 'admin.html';
-      } else if (result.status === 'pending') {
-        if (loginMsgEl) loginMsgEl.textContent = 'Your account is still pending approval.';
-      } else if (result.status === 'rejected') {
-        if (loginMsgEl) loginMsgEl.textContent = 'Your staff account has been rejected. Contact admin.';
-      } else {
-        if (loginMsgEl) loginMsgEl.textContent = result.message || 'Login failed.';
+        window.location.href = `donor.html?name=${encodeURIComponent(result.name)}`;
+        return;
       }
+
+      if (result.role === 'staff' && result.status === 'approved') {
+        window.location.href = 'charity staff.html';
+        return;
+      }
+
+      if (result.role === 'admin' && result.status === 'approved') {
+        window.location.href = 'admin.html';
+        return;
+      }
+
+      if (result.status === 'pending') {
+        if (loginMsgEl) loginMsgEl.textContent = 'Your account is still pending approval.';
+        return;
+      }
+
+      if (result.status === 'rejected') {
+        if (loginMsgEl) loginMsgEl.textContent = 'Your staff account has been rejected.';
+        return;
+      }
+
+      if (loginMsgEl) loginMsgEl.textContent = result.message || 'Login failed.';
 
     } catch (err) {
       console.error(err);
@@ -75,6 +92,7 @@ if (loginForm) {
     }
   });
 }
+
 
 
 
@@ -95,9 +113,9 @@ function refreshStaffList() {
       data.forEach(user => {
         const item = document.createElement('li');
         item.innerHTML = `
-         <strong>${user.name}</strong> (${user.email})
+          <strong>${user.name}</strong> (${user.email})
           <button class="approveStaff" data-user-id="${user.id}">Approve</button>
-           <button class="rejectStaff" data-user-id="${user.id}">Reject</button>
+          <button class="rejectStaff" data-user-id="${user.id}">Reject</button>
         `;
         list.appendChild(item);
       });
@@ -110,44 +128,39 @@ function refreshStaffList() {
 }
 
 
+
 document.addEventListener('click', (e) => {
   const target = e.target;
+
   if (target.matches('.approveStaff')) {
     const id = target.getAttribute('data-user-id');
     if (id) approveStaff(id);
-  } else if (target.matches('.rejectStaff')) {
+  }
+
+  if (target.matches('.rejectStaff')) {
     const id = target.getAttribute('data-user-id');
     if (id) rejectStaff(id);
   }
 });
 
-
 function approveStaff(id) {
   fetch('http://localhost:2000/admin/approve', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
   })
-    .then(res => res.json())
-    .then(result => {
-      console.log('Approval result:', result);
-      refreshStaffList();
-    })
-    .catch(err => console.error('Approval failed:', err));
+    .then(r => r.json())
+    .then(() => refreshStaffList());
 }
 
 function rejectStaff(id) {
   fetch('http://localhost:2000/admin/reject', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
   })
-    .then(res => res.json())
-    .then(result => {
-      console.log('Rejection result:', result);
-      refreshStaffList();
-    })
-    .catch(err => console.error('Rejection failed:', err));
+    .then(r => r.json())
+    .then(() => refreshStaffList());
 }
 
 document.addEventListener('DOMContentLoaded', () => {
