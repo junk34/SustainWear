@@ -1,4 +1,3 @@
-// SIGNUP FORM HANDLER
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
   signupForm.addEventListener('submit', async (e) => {
@@ -15,12 +14,12 @@ if (signupForm) {
 
     try {
       const res = await fetch('http://localhost:2000/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-    const result = await res.json();
+      const result = await res.json();
       if (signupMsgEl) signupMsgEl.textContent = result.message || 'Signup successful.';
       signupForm.reset();
     } catch (error) {
@@ -30,8 +29,9 @@ if (signupForm) {
   });
 }
 
-// LOGIN FORM HANDLER
+
 const loginForm = document.getElementById('loginForm');
+
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -45,14 +45,17 @@ if (loginForm) {
 
     try {
       const res = await fetch('http://localhost:2000/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-   if (result.role === 'donor' && result.status === 'approved') {
+      if (result.name) {
+        localStorage.setItem("loggedInName", result.name);
+      }
+      if (result.role === 'donor' && result.status === 'approved') {
         window.location.href = 'donor.html';
       } else if (result.role === 'staff' && result.status === 'approved') {
         window.location.href = 'charity staff.html';
@@ -65,6 +68,7 @@ if (loginForm) {
       } else {
         if (loginMsgEl) loginMsgEl.textContent = result.message || 'Login failed.';
       }
+
     } catch (err) {
       console.error(err);
       if (loginMsgEl) loginMsgEl.textContent = 'Login failed. Please try again.';
@@ -72,31 +76,40 @@ if (loginForm) {
   });
 }
 
-// fetch pending staff requests and display them in the admin dashboard
-function refreshStaffList() {}
-fetch('http://localhost:2000/admin/pending-staff')
-  .then(res => res.json())
-  .then(data => {
-    const list = document.getElementById('staffRequestList');
-    if (!list) return;
-    list.innerHTML = '';
-    data.forEach(user => {
-      const item = document.createElement('li');
-      item.innerHTML = `
-        <strong>${user.name}</strong> (${user.email})
-        <button class="approveStaff" data-user-id="${user_id}">Approve</button>
-        <button class="rejectStaff" data-user-id="${user_id}">Reject</button>
-      `;
-      list.appendChild(item);
-    });
-  })
-  .catch(err => {
-    console.error('Error fetching staff requests:', err);
-    const list = document.getElementById('staffRequestList');
-    if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
-  });
 
-// Event delegation for approve/reject buttons
+
+function refreshStaffList() {
+  fetch('http://localhost:2000/admin/pending-staff')
+    .then(res => res.json())
+    .then(data => {
+      const list = document.getElementById('staffRequestList');
+      if (!list) return;
+
+      list.innerHTML = '';
+
+      if (data.length === 0) {
+        list.innerHTML = '<li>No pending staff requests.</li>';
+        return;
+      }
+
+      data.forEach(user => {
+        const item = document.createElement('li');
+        item.innerHTML = `
+         <strong>${user.name}</strong> (${user.email})
+          <button class="approveStaff" data-user-id="${user.id}">Approve</button>
+           <button class="rejectStaff" data-user-id="${user.id}">Reject</button>
+        `;
+        list.appendChild(item);
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching staff requests:', err);
+      const list = document.getElementById('staffRequestList');
+      if (list) list.innerHTML = '<li>Failed to load staff requests.</li>';
+    });
+}
+
+
 document.addEventListener('click', (e) => {
   const target = e.target;
   if (target.matches('.approveStaff')) {
@@ -108,30 +121,37 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// approve staff
+
 function approveStaff(id) {
   fetch('http://localhost:2000/admin/approve', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id })
   })
     .then(res => res.json())
     .then(result => {
       console.log('Approval result:', result);
-      // optionally refresh the list or remove the item from DOM
+      refreshStaffList();
     })
     .catch(err => console.error('Approval failed:', err));
 }
 
-// reject staff
 function rejectStaff(id) {
   fetch('http://localhost:2000/admin/reject', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id })
   })
-   .then(() => location.reload())
+    .then(res => res.json())
+    .then(result => {
+      console.log('Rejection result:', result);
+      refreshStaffList();
+    })
     .catch(err => console.error('Rejection failed:', err));
-
 }
-   
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.endsWith('admin.html')) {
+    refreshStaffList();
+  }
+});

@@ -15,6 +15,8 @@
 
       <label>Item Photo</label>
       <input type="file" id="itemImage" accept="image/*">
+      
+      <img id="preview" style="display:none; width:150px; margin-top:10px; border-radius:6px;">
 
       <label for="category">Category</label>
       <select id="category" required>
@@ -51,10 +53,11 @@
         <option value="repair">Needs Repair</option>
       </select>
 
-      <label for="description">Extra Notes (max 120 characters)</label>
-      <textarea id="description" maxlength="120"
+      <label for="description">Extra Notes (max 200 characters)</label>
+      <textarea id="description" maxlength="200"
       placeholder="Example: slight tear on right sleeve"></textarea>
-      <p id="charCount">0/120</p>
+
+      <p id="charCount">0/200</p>
 
       <button type="submit">Submit Donation</button>
     </form>
@@ -63,6 +66,5 @@
   </div>
 
   <script src="donor.js"></script>
-
 </body>
 </html>
