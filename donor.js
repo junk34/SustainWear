@@ -1,5 +1,5 @@
 const options = {
-  outerwear: ["Jacket", "Coat", "Raincoat", "Puffer", "Vest", "Other"],
+  outerwear: ["Jacket", "Coat", "Raincoat", "Puffer", "Blazer", "Other"],
   tops: ["Hoodie", "Sweater", "T-Shirt", "Blouse", "Tank Top", "Other"],
   bottoms: ["Jeans", "Trousers", "Shorts", "Skirt", "Leggings", "Other"],
   shoes: ["Sneakers", "Boots", "Heels", "Flats", "Sandals", "Other"],
