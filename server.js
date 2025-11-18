@@ -2,20 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('@vscode/sqlite3');
 
 const app = express();
 const PORT = 2000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname)));
 
 const dbPath = path.join(__dirname, 'sustainwear.db');
 console.log("DB LOADED FROM:", dbPath);
 
 const db = new sqlite3.Database(dbPath);
-   
+
 db.run(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +40,6 @@ db.run(`
   )
 `);
 
-
 app.post("/signup", (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -57,14 +56,14 @@ app.post("/signup", (req, res) => {
       if (err) {
         if (err.message.includes("UNIQUE"))
           return res.json({ message: "Email already exists." });
+
         return res.json({ message: "Error creating account." });
       }
+
       res.json({ message: "Account created! You can now log in." });
     }
   );
 });
-
-
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -73,13 +72,9 @@ app.post("/login", (req, res) => {
     `SELECT * FROM users WHERE email = ? AND password = ?`,
     [email, password],
     (err, user) => {
-      if (err) {
-        return res.json({ message: "Database error." });
-      }
+      if (err) return res.json({ message: "Database error." });
 
-      if (!user) {
-        return res.json({ message: "Invalid email or password." });
-      }
+      if (!user) return res.json({ message: "Invalid email or password." });
 
       res.json({
         message: "Login successful.",
@@ -90,8 +85,6 @@ app.post("/login", (req, res) => {
     }
   );
 });
-
-
 
 app.post("/donate", (req, res) => {
   const { donor_name, category, subcategory, size, condition, description } = req.body;
@@ -110,6 +103,22 @@ app.post("/donate", (req, res) => {
   );
 });
 
+app.get("/donor/history", (req, res) => {
+  const { donor } = req.query;
+
+  if (!donor) return res.json([]);
+
+  db.all(
+    `SELECT category, subcategory, size, condition, description, status
+     FROM donations
+     WHERE donor_name = ?`,
+    [donor],
+    (err, rows) => {
+      if (err) return res.json({ message: "Database error." });
+      res.json(rows);
+    }
+  );
+});
 
 app.get("/admin/pending-staff", (req, res) => {
   db.all(
@@ -121,7 +130,6 @@ app.get("/admin/pending-staff", (req, res) => {
     }
   );
 });
-
 
 app.post("/admin/approve", (req, res) => {
   const { id } = req.body;
@@ -149,7 +157,6 @@ app.post("/admin/reject", (req, res) => {
   );
 });
 
-
 app.get("/staff/donations", (req, res) => {
   db.all(
     `SELECT * FROM donations WHERE status = 'pending'`,
@@ -160,7 +167,6 @@ app.get("/staff/donations", (req, res) => {
     }
   );
 });
-
 
 app.post("/staff/donations/approve", (req, res) => {
   const { id } = req.body;

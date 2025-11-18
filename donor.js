@@ -1,48 +1,88 @@
-const options = {
-  outerwear: ["Jacket", "Coat", "Raincoat", "Puffer", "Blazer", "Other"],
-  tops: ["Hoodie", "Sweater", "T-Shirt", "Blouse", "Tank Top", "Other"],
-  bottoms: ["Jeans", "Trousers", "Shorts", "Skirt", "Leggings", "Other"],
-  shoes: ["Sneakers", "Boots", "Heels", "Flats", "Sandals", "Other"],
-  accessories: ["Jewelry", "Hat", "Scarf", "Belt", "Bag", "Other"]
+const categorySelect = document.getElementById("category");
+const subcategorySelect = document.getElementById("subcategory");
+
+const subcategories = {
+  tops: ["t-shirt", "shirt", "blouse", "crop top", "tank top"],
+  outerwear: ["jacket", "coat", "hoodie", "blazer"],
+  bottoms: ["jeans", "shorts", "trousers", "skirt", "joggers"],
+  shoes: ["sneakers", "boots", "heels", "sandals"],
+  accessories: ["hat", "belt", "bag", "scarf", "gloves"]
 };
 
-document.getElementById("category").addEventListener("change", function () {
-  const cat = this.value;
-  const subcat = document.getElementById("subcategory");
+categorySelect.addEventListener("change", () => {
+  const selected = categorySelect.value;
 
-  subcat.innerHTML = "<option value=''>Select Type</option>";
+  subcategorySelect.innerHTML = "<option value=''>Select Type</option>";
 
-  if (!cat || !options[cat]) return;
+  if (!selected || !subcategories[selected]) return;
 
-  options[cat].forEach(item => {
-    let opt = document.createElement("option");
-    opt.value = item.toLowerCase();
-    opt.textContent = item;
-    subcat.appendChild(opt);
+  subcategories[selected].forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    subcategorySelect.appendChild(option);
   });
 });
 
-const imageInput = document.getElementById("itemImage");
-if (imageInput) {
-  imageInput.addEventListener("change", function () {
-    const img = document.getElementById("preview");
-    if (!img) return;
 
-    img.src = URL.createObjectURL(this.files[0]);
-    img.style.display = "block";
-  });
+document.addEventListener("DOMContentLoaded", loadDonationHistory);
+
+function loadDonationHistory() {
+  const donorName = localStorage.getItem("loggedInName");
+
+  console.log("DONOR FOUND:", donorName);
+
+  const list = document.getElementById("donationHistory");
+  if (!list) return;
+
+  if (!donorName) {
+    list.innerHTML = "<li>Error: No donor name found. Log in again.</li>";
+    return;
+  }
+
+  list.innerHTML = "<li>Loading your donation history...</li>";
+
+  fetch(`http://localhost:2000/donor/history?donor=${encodeURIComponent(donorName)}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("HISTORY RESULT:", data);
+
+      if (!data || data.length === 0) {
+        list.innerHTML = "<li>You have not made any donations yet.</li>";
+        return;
+      }
+
+      list.innerHTML = ""; 
+
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.classList.add("history-item");
+        li.innerHTML = `
+          <strong>${item.category} → ${item.subcategory}</strong><br>
+          Size: ${item.size}<br>
+          Condition: ${item.condition}<br>
+          Notes: ${item.description || "None"}<br>
+          <span class="status">Status: ${item.status}</span>
+        `;
+        list.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error("HISTORY ERROR:", err);
+      list.innerHTML = "<li>Unable to load history.</li>";
+    });
 }
 
-document.getElementById("description").addEventListener("input", function () {
-  document.getElementById("charCount").textContent = `${this.value.length}/120`;
-});
 
-document.getElementById("donationForm").addEventListener("submit", async function (e) {
+
+// ===================================
+// DONATION FORM SUBMISSION
+// ===================================
+
+document.getElementById("donationForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
-  // 🔥 FIXED — correct key name from login.js
   const donor_name = localStorage.getItem("loggedInName");
-
   if (!donor_name) {
     alert("Error: No donor name found. Please log in again.");
     return;
@@ -71,7 +111,9 @@ document.getElementById("donationForm").addEventListener("submit", async functio
   document.getElementById("donationMessage").innerText = result.message;
 
   if (result.message === "Donation submitted!") {
-    document.getElementById("donationForm").reset();
-    document.getElementById("charCount").textContent = "0/120";
+    this.reset();
+    document.getElementById("charCount").textContent = "0/200";
+
+    loadDonationHistory();
   }
 });
