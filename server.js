@@ -1,155 +1,120 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-
-
+const express = require("express");
 const app = express();
 const PORT = 2000;
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(__dirname));
-
-const db = new sqlite3.Database('./sustainwear.db');
+app.use(express.json());
+app.use(express.static("C:/Users/44795/OneDrive/SustainWear/SustainWear/public"));
 
 
-db.run(`CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  email TEXT UNIQUE,
-  password TEXT,
-  role TEXT,
-  status TEXT
-)`);
+let donations = [];       // all donations
+let notifications = [];   // notifications for donors
+
+let donationIdCounter = 1;
+let notifIdCounter = 1;
+
+// SIMULATION: always logged-in donor id = 1
+function getDonorId() {
+  return 1;
+}
 
 
-db.run(`CREATE TABLE IF NOT EXISTS donations (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  donor_name TEXT,
-  item TEXT,
-  quantity INTEGER,
-  message TEXT,
-  status TEXT,
-  reason TEXT,
-  staff_message TEXT
-)`);
+app.post("/api/donate-item", (req, res) => {
+  const donorId = getDonorId();
+  const { donorName, category, type, size, condition, description } = req.body;
 
-
-app.post('/signup', async (req, res) => {
-  const { name, email, password, role } = req.body;
-  if (!name || !email || !password || !role) {
-    return res.json({ message: 'All fields required.' });
+  if (!donorName || !category || !type || !size || !condition) {
+    return res.status(400).json({ message: "Missing required fields." });
   }
-;
-  const status = role === 'donor' ? 'approved' : 'pending';
 
-  db.run(
-    `INSERT INTO users (name, email, password, role, status)
-     VALUES (?, ?, ?, ?, ?)`,
-    [name, email, password, role, status], 
-    function (err) {
-      if (err) {
-        if (err.message.includes('UNIQUE constraint')) {
-          res.json({ message: 'Email already exists.' });
-        } else {
-          res.json({ message: 'Error creating account.' });
-        }
-      } else {
-        res.json({ message: 'Account created! You can now log in.' });
-      }
-    }
-  );
+  const donation = {
+    id: donationIdCounter++,
+    donorId,
+    donorName,
+    category,
+    type,
+    size,
+    condition,
+    description: description || "",
+    status: "pending"
+  };
+
+  donations.push(donation);
+
+  return res.json({
+    message: "Donation submitted successfully!",
+    donation
+  });
 });
 
 
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
+//  STAFF ROUTE – Get all pending donations
 
-  db.get(
-    `SELECT * FROM users WHERE email = ? AND password = ?`,
-    [email, password], 
-    (err, row) => {
-      if (err) return res.json({ message: 'Database error.' });
-      if (!row) return res.json({ message: 'Invalid email or password.' });
-
-      res.json({
-        message: 'Login successful.',
-        role: row.role,
-        status: row.status
-      });
-    }
-  );
+app.get("/api/donation-requests", (req, res) => {
+  const pending = donations.filter((d) => d.status === "pending");
+  res.json(pending);
 });
 
 
-app.get('/admin/pending-staff', (req, res) => {
-  db.all(
-    `SELECT id, name, email FROM users WHERE role = 'staff' AND status = 'pending'`,
-    [],
-    (err, rows) => {
-      if (err) return res.json({ message: 'Database error.' });
-      res.json(rows);
-    }
-  );
-});
+//  STAFF ROUTE – Approve donation
 
-
-app.post('/admin/approve', (req, res) => {
+app.post("/api/approve-donation", (req, res) => {
   const { id } = req.body;
-  db.run(
-    `UPDATE users SET status = 'approved' WHERE id = ?`,
-    [id],
-    function (err) {
-      if (err) return res.json({ message: 'Database error.' });
-      res.json({ message: 'Staff approved.' });
-    }
-  );
-});
+  const donation = donations.find((d) => d.id === Number(id));
 
+  if (!donation) {
+    return res.status(404).json({ message: "Donation not found." });
+  }
 
-app.post('/admin/reject', (req, res) => {
-  const { id } = req.body;
-  db.run(`DELETE FROM users WHERE id = ?`, [id], function (err) {
-    if (err) return res.json({ message: 'Database error.' });
-    res.json({ message: 'Staff rejected and removed.' });
+  donation.status = "approved";
+
+  notifications.push({
+    id: notifIdCounter++,
+    donorId: donation.donorId,
+    donationId: donation.id,
+    message: "Your donation was approved!"
   });
+
+  res.json({ message: "Donation approved + Notification sent." });
 });
 
 
-app.get('/api/donation-requests', (req, res) => {
-  db.all(`SELECT * FROM donations WHERE status IS NULL`, [], (err, rows) => {
-    if (err) return res.json({ message: 'Database error.' });
-    res.json(rows);
+//  STAFF ROUTE – Reject donation
+
+app.post("/api/reject-donation", (req, res) => {
+  const { id, reason } = req.body;
+  const donation = donations.find((d) => d.id === Number(id));
+
+  if (!donation) {
+    return res.status(404).json({ message: "Donation not found." });
+  }
+
+  donation.status = "rejected";
+
+  notifications.push({
+    id: notifIdCounter++,
+    donorId: donation.donorId,
+    donationId: donation.id,
+    message: reason
+      ? `Your donation was rejected: ${reason}`
+      : "Your donation was rejected."
   });
+
+  res.json({ message: "Donation rejected + Notification sent." });
 });
 
 
-app.post('/api/respond', (req, res) => {
-  const { donationId, status, reason, customMessage } = req.body;
+//  DONOR ROUTE – Get notifications
 
-  db.run(
-    `UPDATE donations SET status = ?, reason = ?, staff_message = ? WHERE id = ?`,
-    [status, reason || null, customMessage || null, donationId],
-    function (err) {
-      if (err) return res.json({ message: 'Database error.' });
-      res.json({ message: 'Response saved successfully.' });
-    }
-  );
+app.get("/api/notifications", (req, res) => {
+  const donorId = getDonorId();
+
+  const list = notifications
+    .filter((n) => n.donorId === donorId)
+    .sort((a, b) => b.id - a.id);
+
+  res.json(list);
 });
 
-
-app.post('/debug/users', (req, res) => {
-  db.all(`SELECT * FROM users`, [], (err, rows) => {
-    if (err) return res.json({ message: 'Database error.' });
-    res.json(rows);
-  });
+app.listen(PORT, () => {
+  console.log(`Server running → http://localhost:${PORT}`);
 });
-
-
-app.get('/', (req, res) => {
-  res.send('Server is running');
-});
-
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));

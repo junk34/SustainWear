@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Donor Dashboard</title>
+
+  <style>
+    body { font-family: Arial; padding: 20px; }
+
+    .toast {
+      position: fixed; right: 20px; bottom: 20px;
+      background: #333; padding: 12px 16px; color: white;
+      border-radius: 6px; opacity: 0.95;
+      z-index: 9999;
+    }
+    .toast.success { background: green; }
+    .toast.error { background: red; }
+
+    #notificationList li {
+      padding: 8px 0;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Donate an Item</h1>
+
+  <form id="donationForm">
+
+    <label>Your Name*</label><br>
+    <input id="donorName" required /><br><br>
+
+    <label>Category*</label><br>
+    <select id="category" required>
+      <option value="">Select Category</option>
+      <option value="tops">Tops</option>
+      <option value="bottoms">Bottoms</option>
+      <option value="outerwear">Outerwear</option>
+      <option value="shoes">Shoes</option>
+      <option value="accessories">Accessories</option>
+    </select><br><br>
+
+    <label>Type*</label><br>
+    <select id="subcategory" required>
+      <option value="">Select Category First</option>
+    </select><br><br>
+
+    <label>Size*</label><br>
+    <input id="size" required /><br><br>
+
+    <label>Condition*</label><br>
+    <select id="condition" required>
+      <option value="">Select Condition</option>
+      <option value="New">New</option>
+      <option value="Like new">Like New</option>
+      <option value="Good">Good</option>
+      <option value="Fair">Fair</option>
+    </select><br><br>
+
+    <label>Description (optional, max 120 characters)</label><br>
+    <textarea id="description" maxlength="120"></textarea><br>
+    <p id="charCount">0/120</p>
+
+    <button type="submit">Submit Donation</button>
+  </form>
+
+  <h2>Your Notifications</h2>
+  <ul id="notificationList">Loading...</ul>
+
+  <script src="donor.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Staff Dashboard – Donation Requests</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .card {
+      border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pending Donation Requests</h1>
+
+  <div id="requests"></div>
+
+  <script>
+    async function loadRequests() {
+      const container = document.getElementById("requests");
+      container.innerHTML = "Loading...";
+
+      const res = await fetch("/api/donation-requests");
+      const data = await res.json();
+
+      container.innerHTML = "";
+
+      if (!data.length) {
+        container.innerHTML = "<p>No pending donations.</p>";
+        return;
+      }
+
+      data.forEach((donation) => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+          <h3>${donation.donorName}</h3>
+          <p><b>Category:</b> ${donation.category}</p>
+          <p><b>Type:</b> ${donation.type}</p>
+          <p><b>Size:</b> ${donation.size}</p>
+          <p><b>Condition:</b> ${donation.condition}</p>
+          <p><b>Description:</b> ${donation.description}</p>
+          <input id="reason-${donation.id}" placeholder="Reason if rejecting" />
+          <br><br>
+          <button onclick="approve(${donation.id})">Approve</button>
+          <button onclick="reject(${donation.id})">Reject</button>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    async function approve(id) {
+      await fetch("/api/approve-donation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+
+      alert("Approved!");
+      loadRequests();
+    }
+
+    async function reject(id) {
+      const reason = document.getElementById(`reason-${id}`).value;
+
+      await fetch("/api/reject-donation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, reason })
+      });
+
+      alert("Rejected!");
+      loadRequests();
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+</head>
+<body>
+
+  <h1>Admin Dashboard</h1>
+
+  <h2>Pending Staff Accounts</h2>
+  <ul id="staffList"></ul>
+
+  <h2>Pending Donations</h2>
+  <ul id="donationList"></ul>
+
+  <script>
+    
+    async function loadStaff() {
+      const res = await fetch("/api/staff-requests");
+      const data = await res.json();
+
+      const list = document.getElementById("staffList");
+      list.innerHTML = "";
+
+      data.forEach(user => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${user.name}</b> (${user.email})
+          <button onclick="approveStaff('${user.email}')">Approve</button>
+          <button onclick="rejectStaff('${user.email}')">Reject</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function approveStaff(email) {
+      fetch("/api/approve-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      }).then(loadStaff);
+    }
+
+    function rejectStaff(email) {
+      fetch("/api/reject-staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      }).then(loadStaff);
+    }
+
+    // -----------------------------
+    // LOAD DONATION APPROVAL REQUESTS
+    // -----------------------------
+    async function loadDonations() {
+      const res = await fetch("/api/donation-requests");
+      const donations = await res.json();
+
+      const list = document.getElementById("donationList");
+      list.innerHTML = "";
+
+      donations.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <b>${item.donor_name}</b> donated <b>${item.category} - ${item.subcategory}</b><br>
+          Size: ${item.size} | Condition: ${item.condition} <br>
+          Notes: ${item.description || "None"} <br>
+          <button onclick="approveDonation(${item.id})">Approve</button>
+          <button onclick="rejectDonation(${item.id})">Reject</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function approveDonation(id) {
+      fetch("/api/approve-donation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      }).then(loadDonations);
+    }
+
+    function rejectDonation(id) {
+      fetch("/api/reject-donation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      }).then(loadDonations);
+    }
+
+    // Load everything on page load
+    loadStaff();
+    loadDonations();
+  </script>
+
+</body>
+</html>

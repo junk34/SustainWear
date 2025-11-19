@@ -55,7 +55,7 @@ if (loginForm) {
    if (result.role === 'donor' && result.status === 'approved') {
         window.location.href = 'donor.html';
       } else if (result.role === 'staff' && result.status === 'approved') {
-        window.location.href = 'charity staff.html';
+        window.location.href = 'admin.html';
       } else if (result.role === 'admin' && result.status === 'approved') {
         window.location.href = 'admin.html';
       } else if (result.status === 'pending') {
