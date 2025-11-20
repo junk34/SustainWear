@@ -13,7 +13,7 @@ let notifications = [];   // notifications for donors
 let donationIdCounter = 1;
 let notifIdCounter = 1;
 
-// SIMULATION: always logged-in donor id = 1
+
 function getDonorId() {
   return 1;
 }
@@ -151,4 +151,5 @@ app.get("/api/notifications", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running → http://localhost:${PORT}`);
+})
 });
