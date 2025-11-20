@@ -5,6 +5,7 @@ const PORT = 2000;
 app.use(express.json());
 app.use(express.static("C:/Users/44795/OneDrive/SustainWear/SustainWear/public"));
 
+const db = new sqlite3.Database(dbPath);
 
 let donations = [];       // all donations
 let notifications = [];   // notifications for donors
@@ -17,6 +18,18 @@ function getDonorId() {
   return 1;
 }
 
+db.run(`
+  CREATE TABLE IF NOT EXISTS donations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    donor_name TEXT,
+    category TEXT,
+    subcategory TEXT,
+    size TEXT,
+    condition TEXT,
+    description TEXT,
+    status TEXT DEFAULT 'pending'
+  )
+`);
 
 app.post("/api/donate-item", (req, res) => {
   const donorId = getDonorId();
@@ -54,6 +67,27 @@ app.get("/api/donation-requests", (req, res) => {
   res.json(pending);
 });
 
+app.post("/donate", (req, res) => {
+  const { donor_name, category, subcategory, size, condition, description } = req.body;
+
+  if (!donor_name || !category || !subcategory || !size || !condition)
+    return res.json({ message: "Missing fields." });
+
+  db.run(
+    `INSERT INTO donations (donor_name, category, subcategory, size, condition, description)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [donor_name, category, subcategory, size, condition, description],
+    err => {
+      if (err) return res.json({ message: "Database error." });
+      res.json({ message: "Donation submitted!" });
+    }
+  );
+});
+
+app.get("/donor/history", (req, res) => {
+  const { donor } = req.query;
+
+  if (!donor) return res.json([]);
 
 //  STAFF ROUTE – Approve donation
 

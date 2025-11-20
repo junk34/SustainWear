@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SustainWear - Donate Clothing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="donation-container">
+    <h1>Donate an Item</h1>
+
+    <form id="donationForm">
+
+      <label>Item Photo</label>
+      <input type="file" id="itemImage" accept="image/*">
+      
+      <img id="preview" style="display:none; width:150px; margin-top:10px; border-radius:6px;">
+
+      <label for="category">Category</label>
+      <select id="category" required>
+        <option value="">Select Category</option>
+        <option value="tops">Tops</option>
+        <option value="outerwear">Outerwear</option>
+        <option value="bottoms">Bottoms</option>
+        <option value="shoes">Shoes</option>
+        <option value="accessories">Accessories</option>
+      </select>
+
+      <label for="subcategory">Type</label>
+      <select id="subcategory" required>
+        <option value="">Select a category first</option>
+      </select>
+
+      <label for="size">Size</label>
+      <select id="size" required>
+        <option value="">Select Size</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M">M</option>
+        <option value="L">L</option>
+        <option value="XL">XL</option>
+      </select>
+
+      <label for="condition">Condition</label>
+      <select id="condition" required>
+        <option value="">Select Condition</option>
+        <option value="new">New (with tags)</option>
+        <option value="excellent">Excellent</option>
+        <option value="good">Good</option>
+        <option value="fair">Fair</option>
+        <option value="repair">Needs Repairs</option>
+      </select>
+
+      <label for="description">Extra Notes (max 200 characters)</label>
+      <textarea id="description" maxlength="200" placeholder="Example: slight tear on right sleeve"></textarea>
+
+      <p id="charCount">0/200</p>
+
+      <button type="submit">Submit Donation</button>
+    </form>
+
+    <p id="donationMessage"></p>
+
+    <h2>Your Donation History</h2>
+    <ul id="donationHistory" class="donation-history-list">
+      <li>Loading your donation history...</li>
+    </ul>
+
+  </div>
+
+  <script src="donor.js"></script>
+</body>
+</html>

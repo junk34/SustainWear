@@ -1,0 +1,31 @@
+.donation-history-list {
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.donation-history-list li {
+  background: #f8f8f8;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  border-left: 4px solid #4CAF50;
+}
+
+.status {
+  font-weight: bold;
+}
+
+.status.pending {
+  color: #ff9800;
+}
+
+.status.approved {
+  color: #4CAF50;
+}
+
+.status.rejected {
+  color: #f44336;
+}
