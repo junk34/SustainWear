@@ -17,7 +17,7 @@
   <script>
     
     async function loadStaff() {
-      const res = await fetch("/api/staff-requests");
+      const res = await fetch("/admin/pending-staff");
       const data = await res.json();
 
       const list = document.getElementById("staffList");
@@ -27,26 +27,26 @@
         const li = document.createElement("li");
         li.innerHTML = `
           <b>${user.name}</b> (${user.email})
-          <button onclick="approveStaff('${user.email}')">Approve</button>
-          <button onclick="rejectStaff('${user.email}')">Reject</button>
+          <button onclick="approveStaff('${user.id}')">Approve</button>
+          <button onclick="rejectStaff('${user.id}')">Reject</button>
         `;
         list.appendChild(li);
       });
     }
 
-    function approveStaff(email) {
-      fetch("/api/approve-staff", {
+    function approveStaff(id) {
+      fetch("/admin/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ id })
       }).then(loadStaff);
     }
 
-    function rejectStaff(email) {
-      fetch("/api/reject-staff", {
+    function rejectStaff(id) {
+      fetch("/admin/reject", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ id })
       }).then(loadStaff);
     }
 

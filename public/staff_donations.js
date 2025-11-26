@@ -8,7 +8,7 @@ async function loadDonationRequests() {
   container.innerHTML = "<p>Loading...</p>";
 
   try {
-    const res = await fetch("http://localhost:2000/api/donation-requests");
+    const res = await fetch("http://localhost:2025/api/donation-requests");
     const data = await res.json();
 
     container.innerHTML = "";
@@ -69,7 +69,7 @@ async function submitDonationResponse(id) {
     return;
   }
 
-  const res = await fetch("http://localhost:2000/api/respond", {
+  const res = await fetch("http://localhost:2025/api/respond", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({

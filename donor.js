@@ -42,7 +42,7 @@ function loadDonationHistory() {
 
   list.innerHTML = "<li>Loading your donation history...</li>";
 
-  fetch(`http://localhost:2000/donor/history?donor=${encodeURIComponent(donorName)}`)
+  fetch(`http://localhost:2025/donor/history?donor=${encodeURIComponent(donorName)}`)
     .then(res => res.json())
     .then(data => {
       console.log("HISTORY RESULT:", data);
@@ -94,7 +94,7 @@ document.getElementById("donationForm").addEventListener("submit", async functio
   const condition = document.getElementById("condition").value;
   const description = document.getElementById("description").value;
 
-  const response = await fetch("http://localhost:2000/donate", {
+  const response = await fetch("http://localhost:2025/donate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
