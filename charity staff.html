@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard – Donation Requests</title>
+  <link rel="stylesheet" href="/styles/staff.css" />
+  <link rel="script" href="authhandlers.js" />
+</head>
+<body>
+  <h1>Incoming Donation Requests</h1>
+
+  <div id="requests-container">
+  </div>
+
+  <script>
+async function loadRequests() {
+  const res = await fetch('/api/donation-requests');
+  const requests = await res.json();
+  const container = document.getElementById('requests-container');
+  container.innerHTML = '';
+
+  data.forEach(request => {
+    const card = document.createElement('div');
+    card.className = 'request-card';
+    card.innerHTML = `
+      <h3>Donor: ${request.donor_name}</h3>
+      <p><strong>Item:</strong> ${request.item}</p>
+      <p><strong>Quantity:</strong> ${request.quantity}</p>
+      <p><strong>Messagr:</strong> ${request.message}</p>
+    `;
+
+    <form class ="response-form">
+      <input type="hidden" name="request_id" value="${request.id}" />
+
+<label>Decision:</label>
+      <select name="decision" required>
+        <option value="">Select</option>
+        <option value="accept">Accept</option>
+        <option value="decline">Decline</option>
+      </select>
+
+      <label>Reason: (if rejecting)</label>
+      <select name="reason">
+        <option value="">Select</option>
+        <option value="not_needed">Not Needed</option>
+        <option value="quality">Quality Concerns</option>
+        <option value="duplicate">Duplicate Item</option>
+        </select>
+
+        <label>Custom messaage:</label>
+        <textarea name="custom_message" rows="3" placeholder="Optional custom message"></textarea>
+
+        <button type="submit">Submit </button>
+    </form>
+    container.appendChild(card);
+         });
+
+      document.querySelectorAll('.response-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+
+          try {
+            const res = await fetch('/api/respond', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            alert(result.message);
+            loadRequests(); // refresh list
+          } catch (err) {
+            console.error(err);
+            alert('Failed to submit response.');
+          }
+        });
+      })
+      loadRequests();
+      </script>
+
+</body>
+</html>
