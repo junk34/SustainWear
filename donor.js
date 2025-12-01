@@ -1,6 +1,32 @@
 const categorySelect = document.getElementById("category");
 const subcategorySelect = document.getElementById("subcategory");
 
+/* ---------- IMAGE PREVIEW ---------- */
+const itemImageInput = document.getElementById("itemImage");
+const previewImg = document.getElementById("preview");
+
+if (itemImageInput && previewImg) {
+  itemImageInput.addEventListener("change", function () {
+    const file = this.files[0];
+
+    if (!file) {
+      // No file selected – hide the preview
+      previewImg.style.display = "none";
+      previewImg.src = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewImg.src = e.target.result;      // show the chosen image
+      previewImg.style.display = "block";    // make sure it's visible
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+/* ----------------------------------- */
+
 const subcategories = {
   tops: ["t-shirt", "shirt", "blouse", "crop top", "tank top"],
   outerwear: ["jacket", "coat", "hoodie", "blazer"],
@@ -52,7 +78,7 @@ function loadDonationHistory() {
         return;
       }
 
-      list.innerHTML = ""; 
+      list.innerHTML = "";
 
       data.forEach(item => {
         const li = document.createElement("li");
