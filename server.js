@@ -1,11 +1,16 @@
 const express = require("express");
 const app = express();
-const PORT = 2000;
+const PORT = 2025;
+
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path"); 
+const dbPath = "sustainwear.db";
+const db = new sqlite3.Database(dbPath);
+
 
 app.use(express.json());
-app.use(express.static("C:/Users/44795/OneDrive/SustainWear/SustainWear/public"));
+app.use(express.static(path.join(__dirname, "public")));
 
-const db = new sqlite3.Database(dbPath);
 
 let donations = [];       // all donations
 let notifications = [];   // notifications for donors
@@ -17,6 +22,16 @@ let notifIdCounter = 1;
 function getDonorId() {
   return 1;
 }
+//tables 
+db.run(`
+  CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  email TEXT UNIQUE,
+  password TEXT,
+  role TEXT,
+  status TEXT
+)`);
 
 db.run(`
   CREATE TABLE IF NOT EXISTS donations (
@@ -30,6 +45,94 @@ db.run(`
     status TEXT DEFAULT 'pending'
   )
 `);
+
+app.post("/signup", (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  if (!name || !email || !password || !role)
+    return res.json({ message: "All fields required." });
+
+  
+  const status = role === "donor" ? "approved" : "pending";
+
+  db.run(
+    `INSERT INTO users (name, email, password, role, status)
+     VALUES (?, ?, ?, ?, ?)`,
+    [name, email, password, role, status],
+    err => {
+      if (err) {
+        if (err.message.includes("UNIQUE"))
+          return res.json({ message: "Email already exists." });
+        return res.json({ message: "Error creating account." });
+      }
+      res.json({ message: "Account created! You can now log in." });
+    }
+  );
+});
+
+
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  db.get(
+    `SELECT * FROM users WHERE email = ? AND password = ?`,
+    [email, password],
+    (err, user) => {
+      if (err) return res.json({ message: "Database error." });
+      if (!user) return res.json({ message: "Invalid email or password." });
+
+      res.json({
+        message: "Login successful.",
+        role: user.role,
+        status: user.status,
+        name: user.name
+      });
+    }
+  );
+});
+
+
+app.get("/admin/pending-staff", (req, res) => {
+  db.all(
+    `SELECT id, name, email 
+     FROM users 
+     WHERE role = 'staff' AND status = 'pending'`,
+    (err, rows) => {
+      if (err) return res.json([]);
+      res.json(rows);
+    }
+  );
+});
+
+// Approve staff
+app.post("/admin/approve", (req, res) => {
+  const { id } = req.body;
+  
+  db.run(
+    `UPDATE users SET status = 'approved' WHERE id = ?`,
+    [id],
+    err => {
+      if (err) return res.json({ message: "Error approving staff." });
+      res.json({ message: "Staff approved." });
+    }
+  );
+});
+
+// Reject staff
+app.post("/admin/reject", (req, res) => {
+  const { id } = req.body;
+
+  db.run(
+    `UPDATE users SET status = 'rejected' WHERE id = ?`,
+    [id],
+    err => {
+      if (err) return res.json({ message: "Error rejecting staff." });
+      res.json({ message: "Staff rejected." });
+    }
+  );
+});
+
+
 
 app.post("/api/donate-item", (req, res) => {
   const donorId = getDonorId();
@@ -88,6 +191,8 @@ app.get("/donor/history", (req, res) => {
   const { donor } = req.query;
 
   if (!donor) return res.json([]);
+  res.json([]);
+});
 
 //  STAFF ROUTE – Approve donation
 
@@ -151,5 +256,4 @@ app.get("/api/notifications", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running → http://localhost:${PORT}`);
-})
 });

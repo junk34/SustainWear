@@ -14,7 +14,7 @@ if (signupForm) {
     };
 
     try {
-      const res = await fetch('http://localhost:2000/signup', {
+      const res = await fetch('http://localhost:2025/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -45,7 +45,7 @@ if (loginForm) {
     };
 
     try {
-      const res = await fetch('http://localhost:2000/login', {
+      const res = await fetch('http://localhost:2025/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -74,7 +74,7 @@ if (loginForm) {
       }
 
       if (result.role === 'staff' && result.status === 'approved') {
-        window.location.href = 'charity staff.html';
+        window.location.href = 'charity_staff.html';
         return;
       }
 
@@ -106,7 +106,7 @@ if (loginForm) {
 
 
 function refreshStaffList() {
-  fetch('http://localhost:2000/admin/pending-staff')
+  fetch('http://localhost:2025/admin/pending-staff')
     .then(res => res.json())
     .then(data => {
       const list = document.getElementById('staffRequestList');
@@ -153,7 +153,7 @@ document.addEventListener('click', (e) => {
 });
 
 function approveStaff(id) {
-  fetch('http://localhost:2000/admin/approve', {
+  fetch('http://localhost:2025/admin/approve', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
@@ -163,7 +163,7 @@ function approveStaff(id) {
 }
 
 function rejectStaff(id) {
-  fetch('http://localhost:2000/admin/reject', {
+  fetch('http://localhost:2025/admin/reject', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ id })
