@@ -69,7 +69,9 @@ if (loginForm) {
       }
 
       if (result.role === 'donor' && result.status === 'approved') {
-        window.location.href = `donor.html?name=${encodeURIComponent(result.name)}`;
+      console.log("SERVER RETURNED:", result);
+      localStorage.setItem("loggedInName", result.name || "Unknown Donor");
+      window.location.href = `donor.html?name=${encodeURIComponent(result.name)}`;
         return;
       }
 

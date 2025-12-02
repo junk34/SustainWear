@@ -1,94 +1,145 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const donationForm = document.getElementById("donationForm");
-  const category = document.getElementById("category");
-  const subcategory = document.getElementById("subcategory");
-  const description = document.getElementById("description");
-  const charCount = document.getElementById("charCount");
+const categorySelect = document.getElementById("category");
+const subcategorySelect = document.getElementById("subcategory");
 
-  const categoryMap = {
-    tops: ["T-Shirt", "Blouse", "Hoodie", "Sweater"],
-    bottoms: ["Jeans", "Shorts", "Skirt"],
-    outerwear: ["Jacket", "Coat"],
-    shoes: ["Sneakers", "Boots"],
-    accessories: ["Bag", "Belt", "Hat"]
-  };
+/* ---------- IMAGE PREVIEW ---------- */
+const itemImageInput = document.getElementById("itemImage");
+const previewImg = document.getElementById("preview");
 
-  // --------------------- TOAST MESSAGE ---------------------
-  function showToast(msg, type = "success") {
-    const div = document.createElement("div");
-    div.className = `toast ${type}`;
-    div.innerText = msg;
+if (itemImageInput && previewImg) {
+  itemImageInput.addEventListener("change", function () {
+    const file = this.files[0];
 
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 3000);
-  }
-
-  // --------------------- LOAD NOTIFICATIONS ---------------------
-  async function loadNotifications() {
-    const list = document.getElementById("notificationList");
-    list.innerHTML = "Loading...";
-
-    const res = await fetch("/api/notifications");
-    const data = await res.json();
-
-    if (!data.length) {
-      list.innerHTML = "<li>No notifications yet.</li>";
+    if (!file) {
+      // No file selected – hide the preview
+      previewImg.style.display = "none";
+      previewImg.src = "";
       return;
     }
 
-    list.innerHTML = "";
-    data.forEach((n) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<strong>${n.message}</strong><br><small>Donation ID: ${n.donationId}</small>`;
-      list.appendChild(li);
-    });
-  }
-
-  // --------------------- CHARACTER COUNTER ---------------------
-  description.addEventListener("input", () => {
-    charCount.textContent = `${description.value.length}/120`;
-  });
-
-  // --------------------- CATEGORY LOGIC ---------------------
-  category.addEventListener("change", () => {
-    subcategory.innerHTML = "";
-
-    categoryMap[category.value]?.forEach((type) => {
-      const opt = document.createElement("option");
-      opt.textContent = type;
-      opt.value = type;
-      subcategory.appendChild(opt);
-    });
-  });
-
-  // --------------------- SUBMIT DONATION ---------------------
-  donationForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const donationData = {
-      donorName: document.getElementById("donorName").value.trim(),
-      category: category.value,
-      type: subcategory.value,
-      size: document.getElementById("size").value,
-      condition: document.getElementById("condition").value,
-      description: description.value
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewImg.src = e.target.result;      // show the chosen image
+      previewImg.style.display = "block";    // make sure it's visible
     };
 
-    const res = await fetch("/api/donate-item", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(donationData)
+    reader.readAsDataURL(file);
+  });
+}
+/* ----------------------------------- */
+
+const subcategories = {
+  tops: ["t-shirt", "shirt", "blouse", "crop top", "tank top"],
+  outerwear: ["jacket", "coat", "hoodie", "blazer"],
+  bottoms: ["jeans", "shorts", "trousers", "skirt", "joggers"],
+  shoes: ["sneakers", "boots", "heels", "sandals"],
+  accessories: ["hat", "belt", "bag", "scarf", "gloves"]
+};
+
+categorySelect.addEventListener("change", () => {
+  const selected = categorySelect.value;
+
+  subcategorySelect.innerHTML = "<option value=''>Select Type</option>";
+
+  if (!selected || !subcategories[selected]) return;
+
+  subcategories[selected].forEach(item => {
+    const option = document.createElement("option");
+    option.value = item;
+    option.textContent = item;
+    subcategorySelect.appendChild(option);
+  });
+});
+
+
+document.addEventListener("DOMContentLoaded", loadDonationHistory);
+
+function loadDonationHistory() {
+  const donorName = localStorage.getItem("loggedInName");
+
+  console.log("DONOR FOUND:", donorName);
+
+  const list = document.getElementById("donationHistory");
+  if (!list) return;
+
+  if (!donorName) {
+    list.innerHTML = "<li>Error: No donor name found. Log in again.</li>";
+    return;
+  }
+
+  list.innerHTML = "<li>Loading your donation history...</li>";
+
+  fetch(`http://localhost:2025/donor/history?donor=${encodeURIComponent(donorName)}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("HISTORY RESULT:", data);
+
+      if (!data || data.length === 0) {
+        list.innerHTML = "<li>You have not made any donations yet.</li>";
+        return;
+      }
+
+      list.innerHTML = "";
+
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.classList.add("history-item");
+        li.innerHTML = `
+          <strong>${item.category} → ${item.subcategory}</strong><br>
+          Size: ${item.size}<br>
+          Condition: ${item.condition}<br>
+          Notes: ${item.description || "None"}<br>
+          <span class="status">Status: ${item.status}</span>
+        `;
+        list.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error("HISTORY ERROR:", err);
+      list.innerHTML = "<li>Unable to load history.</li>";
     });
+}
 
-    const result = await res.json();
-    showToast(result.message);
 
-    donationForm.reset();
-    charCount.textContent = "0/120";
 
-    loadNotifications();
+
+// DONATION FORM SUBMISSION
+
+
+document.getElementById("donationForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const donor_name = localStorage.getItem("loggedInName");
+  if (!donor_name) {
+    alert("Error: No donor name found. Please log in again.");
+    return;
+  }
+
+  const category = document.getElementById("category").value;
+  const subcategory = document.getElementById("subcategory").value;
+  const size = document.getElementById("size").value;
+  const condition = document.getElementById("condition").value;
+  const description = document.getElementById("description").value;
+
+  const response = await fetch("http://localhost:2025/donate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      donor_name,
+      category,
+      subcategory,
+      size,
+      condition,
+      description
+    })
   });
 
-  // INITIAL LOAD
-  loadNotifications();
+  const result = await response.json();
+  document.getElementById("donationMessage").innerText = result.message;
+
+  if (result.message === "Donation submitted!") {
+    this.reset();
+    document.getElementById("charCount").textContent = "0/200";
+
+    loadDonationHistory();
+  }
 });

@@ -4,7 +4,7 @@ const PORT = 2025;
 
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path"); 
-const dbPath = "sustainwear.db";
+const dbPath = path.join(__dirname, "sustainwear.db");
 const db = new sqlite3.Database(dbPath);
 
 
@@ -166,9 +166,15 @@ app.post("/api/donate-item", (req, res) => {
 //  STAFF ROUTE – Get all pending donations
 
 app.get("/api/donation-requests", (req, res) => {
-  const pending = donations.filter((d) => d.status === "pending");
-  res.json(pending);
+  db.all(
+    `SELECT * FROM donations WHERE status = 'pending'`,
+    (err, rows) => {
+      if (err) return res.json([]);
+      res.json(rows);
+    }
+  );
 });
+
 
 app.post("/donate", (req, res) => {
   const { donor_name, category, subcategory, size, condition, description } = req.body;
@@ -191,29 +197,30 @@ app.get("/donor/history", (req, res) => {
   const { donor } = req.query;
 
   if (!donor) return res.json([]);
-  res.json([]);
+
+  db.all(
+    `SELECT * FROM donations WHERE donor_name = ? ORDER BY id DESC`,
+    [donor],
+    (err, rows) => {
+      if (err) return res.json([]);
+      res.json(rows);
+    }
+  );
 });
 
 //  STAFF ROUTE – Approve donation
 
 app.post("/api/approve-donation", (req, res) => {
   const { id } = req.body;
-  const donation = donations.find((d) => d.id === Number(id));
 
-  if (!donation) {
-    return res.status(404).json({ message: "Donation not found." });
-  }
-
-  donation.status = "approved";
-
-  notifications.push({
-    id: notifIdCounter++,
-    donorId: donation.donorId,
-    donationId: donation.id,
-    message: "Your donation was approved!"
-  });
-
-  res.json({ message: "Donation approved + Notification sent." });
+  db.run(
+    `UPDATE donations SET status = 'approved' WHERE id = ?`,
+    [id],
+    (err) => {
+      if (err) return res.json({ message: "Database error." });
+      res.json({ message: "Donation approved." });
+    }
+  );
 });
 
 
@@ -221,24 +228,15 @@ app.post("/api/approve-donation", (req, res) => {
 
 app.post("/api/reject-donation", (req, res) => {
   const { id, reason } = req.body;
-  const donation = donations.find((d) => d.id === Number(id));
 
-  if (!donation) {
-    return res.status(404).json({ message: "Donation not found." });
-  }
-
-  donation.status = "rejected";
-
-  notifications.push({
-    id: notifIdCounter++,
-    donorId: donation.donorId,
-    donationId: donation.id,
-    message: reason
-      ? `Your donation was rejected: ${reason}`
-      : "Your donation was rejected."
-  });
-
-  res.json({ message: "Donation rejected + Notification sent." });
+  db.run(
+    `UPDATE donations SET status = 'rejected', description = description || '' WHERE id = ?`,
+    [id],
+    (err) => {
+      if (err) return res.json({ message: "Database error." });
+      res.json({ message: "Donation rejected." });
+    }
+  );
 });
 
 

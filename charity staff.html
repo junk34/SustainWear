@@ -19,7 +19,7 @@ async function loadRequests() {
   const requests = await res.json();
   const container = document.getElementById('requests-container');
   container.innerHTML = '';
-
+}
   data.forEach(request => {
     const card = document.createElement('div');
     card.className = 'request-card';
@@ -79,6 +79,6 @@ async function loadRequests() {
       })
       loadRequests();
       </script>
-
+    
 </body>
 </html>
