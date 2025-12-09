@@ -3,82 +3,158 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Dashboard – Donation Requests</title>
-  <link rel="stylesheet" href="/styles/staff.css" />
-  <link rel="script" href="authhandlers.js" />
+  <title>SustainWear – Staff Dashboard</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="staff.css" />
 </head>
 <body>
-  <h1>Incoming Donation Requests</h1>
 
-  <div id="requests-container">
+  <header class="top-nav">
+    <div class="logo-title">
+      <img src="images/logo.png" alt="SustainWear logo" id="logo">
+      <span class="brand-name">SustainWear</span>
+    </div>
+
+    <nav class="top-menu">
+      <a href="home.html">Home</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <ul>
+        <li class="active">Pending donations</li>
+        <li>Approved donations</li>
+        <li>Inventory</li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="donation-box">
+        <h1>Staff dashboard</h1>
+        <p class="subtitle">
+          Review incoming donations from donors and approve or reject them.
+        </p>
+
+        <section class="history-section">
+          <h2>Pending donation requests</h2>
+
+          <div id="requests-container" class="donation-history-list">
+            <p>Loading pending donation requests...</p>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 
+  <script src="authhandlers.js"></script>
+
   <script>
-async function loadRequests() {
-  const res = await fetch('/api/donation-requests');
-  const requests = await res.json();
-  const container = document.getElementById('requests-container');
-  container.innerHTML = '';
+    async function loadRequests() {
+      const container = document.getElementById('requests-container');
+      container.innerHTML = '<p>Loading pending donation requests...</p>';
 
-  data.forEach(request => {
-    const card = document.createElement('div');
-    card.className = 'request-card';
-    card.innerHTML = `
-      <h3>Donor: ${request.donor_name}</h3>
-      <p><strong>Item:</strong> ${request.item}</p>
-      <p><strong>Quantity:</strong> ${request.quantity}</p>
-      <p><strong>Messagr:</strong> ${request.message}</p>
-    `;
+      try {
+        const res = await fetch('http://localhost:2000/staff/donations');
+        const requests = await res.json();
 
-    <form class ="response-form">
-      <input type="hidden" name="request_id" value="${request.id}" />
+        container.innerHTML = '';
 
-<label>Decision:</label>
-      <select name="decision" required>
-        <option value="">Select</option>
-        <option value="accept">Accept</option>
-        <option value="decline">Decline</option>
-      </select>
+        if (!requests || requests.length === 0) {
+          container.innerHTML = '<p>No pending donation requests.</p>';
+          return;
+        }
 
-      <label>Reason: (if rejecting)</label>
-      <select name="reason">
-        <option value="">Select</option>
-        <option value="not_needed">Not Needed</option>
-        <option value="quality">Quality Concerns</option>
-        <option value="duplicate">Duplicate Item</option>
-        </select>
+        requests.forEach(request => {
+          const card = document.createElement('div');
+          card.className = 'request-card';
 
-        <label>Custom messaage:</label>
-        <textarea name="custom_message" rows="3" placeholder="Optional custom message"></textarea>
+          card.innerHTML = `
+            <h3>Donor: ${request.donor_name}</h3>
+            <p><strong>Item:</strong> ${request.category} → ${request.subcategory}</p>
+            <p><strong>Size:</strong> ${request.size}</p>
+            <p><strong>Condition:</strong> ${request.condition}</p>
+            <p><strong>Notes:</strong> ${request.description || 'None'}</p>
 
-        <button type="submit">Submit </button>
-    </form>
-    container.appendChild(card);
-         });
+            <form class="response-form">
+              <input type="hidden" name="id" value="${request.id}" />
 
-      document.querySelectorAll('.response-form').forEach(form => {
-        form.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const formData = new FormData(form);
-          const data = Object.fromEntries(formData.entries());
+              <label>Decision:</label>
+              <select name="decision" required>
+                <option value="">Select</option>
+                <option value="accept">Accept</option>
+                <option value="decline">Decline</option>
+              </select>
 
-          try {
-            const res = await fetch('/api/respond', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            alert(result.message);
-            loadRequests(); // refresh list
-          } catch (err) {
-            console.error(err);
-            alert('Failed to submit response.');
-          }
+              <label>Reason (if rejecting):</label>
+              <select name="reason">
+                <option value="">Select</option>
+                <option value="not_needed">Not needed</option>
+                <option value="quality">Quality concerns</option>
+                <option value="duplicate">Duplicate item</option>
+              </select>
+
+              <label>Custom message:</label>
+              <textarea
+                name="custom_message"
+                rows="3"
+                placeholder="Optional custom message to the donor"
+              ></textarea>
+
+              <button type="submit" class="submit-btn" style="margin-top:12px;">
+                Submit decision
+              </button>
+            </form>
+          `;
+
+          container.appendChild(card);
         });
-      })
-      loadRequests();
-      </script>
+
+        document.querySelectorAll('.response-form').forEach(form => {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const id = formData.get('id');
+            const decision = formData.get('decision');
+
+            if (!id || !decision) {
+              alert('Please choose a decision.');
+              return;
+            }
+
+            const endpoint =
+              decision === 'accept'
+                ? 'http://localhost:2000/staff/donations/approve'
+                : 'http://localhost:2000/staff/donations/reject';
+
+            try {
+              const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+              });
+
+              const result = await res.json();
+              alert(result.message || 'Donation updated.');
+              loadRequests();
+            } catch (err) {
+              console.error(err);
+              alert('Failed to submit response.');
+            }
+          });
+        });
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<p>Failed to load donation requests.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadRequests);
+  </script>
 
 </body>
 </html>
