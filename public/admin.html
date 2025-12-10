@@ -3,96 +3,184 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    h1 { margin-bottom: 15px; }
+
+    .stat-grid {
+      display: flex; gap: 15px; flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      background: #f7f7f7; border: 1px solid #ddd;
+      padding: 15px 20px; border-radius: 6px;
+      min-width: 180px;
+    }
+    .stat-label { color:#555; font-size:0.85rem; }
+    .stat-value { font-size:1.8rem; font-weight:bold; }
+
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { border:1px solid #ddd; padding: 8px; text-align:left; }
+    th { background:#f2f2f2; }
+
+    button { padding:5px 10px; margin-left:5px; cursor:pointer; }
+  </style>
 </head>
+
 <body>
 
-  <h1>Admin Dashboard</h1>
+<h1>Admin Dashboard</h1>
 
-  <h2>Pending Staff Accounts</h2>
-  <ul id="staffList"></ul>
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value" id="statTotalUsers">0</div>
+  </div>
 
-  <h2>Pending Donations</h2>
-  <ul id="donationList"></ul>
+  <div class="stat-card">
+    <div class="stat-label">Donors</div>
+    <div class="stat-value" id="statTotalDonors">0</div>
+  </div>
 
-  <script>
-    
-    async function loadStaff() {
-      const res = await fetch("/admin/pending-staff");
-      const data = await res.json();
+  <div class="stat-card">
+    <div class="stat-label">Staff (approved)</div>
+    <div class="stat-value" id="statStaffApproved">0</div>
+  </div>
 
-      const list = document.getElementById("staffList");
-      list.innerHTML = "";
+  <div class="stat-card">
+    <div class="stat-label">Staff (pending)</div>
+    <div class="stat-value" id="statStaffPending">0</div>
+  </div>
 
-      data.forEach(user => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <b>${user.name}</b> (${user.email})
-          <button onclick="approveStaff('${user.id}')">Approve</button>
-          <button onclick="rejectStaff('${user.id}')">Reject</button>
-        `;
-        list.appendChild(li);
-      });
-    }
+  <div class="stat-card">
+    <div class="stat-label">Total Donations</div>
+    <div class="stat-value" id="statTotalDonations">0</div>
+  </div>
 
-    function approveStaff(id) {
-      fetch("/admin/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      }).then(loadStaff);
-    }
+  <div class="stat-card">
+    <div class="stat-label">Pending Donations</div>
+    <div class="stat-value" id="statDonationsPending">0</div>
+  </div>
+</div>
 
-    function rejectStaff(id) {
-      fetch("/admin/reject", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      }).then(loadStaff);
-    }
+<h2>User Accounts</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="usersTableBody"></tbody>
+</table>
 
-    // -----------------------------
-    // LOAD DONATION APPROVAL REQUESTS
-    // -----------------------------
-    async function loadDonations() {
-      const res = await fetch("/api/donation-requests");
-      const donations = await res.json();
+<h2>Pending Staff Accounts</h2>
+<ul id="staffList"></ul>
 
-      const list = document.getElementById("donationList");
-      list.innerHTML = "";
+<h2>Pending Donations</h2>
+<ul id="donationList"></ul>
 
-      donations.forEach(item => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <b>${item.donor_name}</b> donated <b>${item.category} - ${item.subcategory}</b><br>
-          Size: ${item.size} | Condition: ${item.condition} <br>
-          Notes: ${item.description || "None"} <br>
-          <button onclick="approveDonation(${item.id})">Approve</button>
-          <button onclick="rejectDonation(${item.id})">Reject</button>
-        `;
-        list.appendChild(li);
-      });
-    }
+<script>
+async function loadStats() {
+  const res = await fetch("/admin/stats");
+  const s = await res.json();
 
-    function approveDonation(id) {
-      fetch("/api/approve-donation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      }).then(loadDonations);
-    }
+  document.getElementById("statTotalUsers").textContent = s.totalUsers;
+  document.getElementById("statTotalDonors").textContent = s.totalDonors;
+  document.getElementById("statStaffApproved").textContent = s.staffApproved;
+  document.getElementById("statStaffPending").textContent = s.staffPending;
+  document.getElementById("statTotalDonations").textContent = s.totalDonations;
+  document.getElementById("statDonationsPending").textContent = s.donationsPending;
+}
 
-    function rejectDonation(id) {
-      fetch("/api/reject-donation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      }).then(loadDonations);
-    }
+async function loadUsers() {
+  const res = await fetch("/admin/users");
+  const users = await res.json();
+  const tbody = document.getElementById("usersTableBody");
+  tbody.innerHTML = "";
+  users.forEach(u => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${u.id}</td>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.role}</td>
+        <td>${u.status}</td>
+      </tr>`;
+  });
+}
 
-    // Load everything on page load
-    loadStaff();
-    loadDonations();
-  </script>
+async function loadStaff() {
+  const res = await fetch("/admin/pending-staff");
+  const staff = await res.json();
+  const list = document.getElementById("staffList");
+  list.innerHTML = "";
+  staff.forEach(u => {
+    list.innerHTML += `
+      <li>
+        <b>${u.name}</b> (${u.email})
+        <button onclick="approveStaff(${u.id})">Approve</button>
+        <button onclick="rejectStaff(${u.id})">Reject</button>
+      </li>`;
+  });
+}
 
+function approveStaff(id) {
+  fetch("/admin/approve", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ id })
+  }).then(refreshAll);
+}
+
+function rejectStaff(id) {
+  fetch("/admin/reject", {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ id })
+  }).then(refreshAll);
+}
+
+async function loadDonations() {
+  const res = await fetch("/api/donation-requests");
+  const donations = await res.json();
+  const list = document.getElementById("donationList");
+  list.innerHTML = "";
+  donations.forEach(d => {
+    list.innerHTML += `
+      <li>
+        <b>${d.donor_name}</b> donated <b>${d.category} - ${d.subcategory}</b><br>
+        Size: ${d.size}, Condition: ${d.condition}<br>
+        Notes: ${d.description || "None"}<br>
+        <button onclick="approveDonation(${d.id})">Approve</button>
+        <button onclick="rejectDonation(${d.id})">Reject</button>
+      </li>`;
+  });
+}
+
+function approveDonation(id) {
+  fetch("/api/approve-donation", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ id })
+  }).then(refreshAll);
+}
+
+function rejectDonation(id) {
+  fetch("/api/reject-donation", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ id })
+  }).then(refreshAll);
+}
+
+function refreshAll() {
+  loadStats();
+  loadUsers();
+  loadStaff();
+  loadDonations();
+}
+
+refreshAll();
+</script>
 </body>
 </html>
