@@ -1,83 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-  <link rel="stylesheet" href="staff.css" />
 <head>
   <meta charset="UTF-8" />
-
-  <title>Staff Dashboard – Donation Requests</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    .card {
-      border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 6px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sustain Wear - Staff Dashboard</title>
+  <link rel="stylesheet" href="staff.css" />
 </head>
 <body>
-  <h1>Pending Donation Requests</h1>
+  <div class="dashboard-container">
+    
+    <aside class="sidebar">
+      <div class="logo">Sustain Wear</div>
+      <nav>
+        <ul class="nav-menu">
+          <li><a href="#" class="active">Manage donations</a></li>
+          <li><a href="#">Donors</a></li>
+          <li><a href="#">Inventory</a></li>
+          <li><a href="#">Distribution</a></li>
+          <li><a href="#">Reports & analytics</a></li>
+          <li><a href="#" class="logout">Logout</a></li>
+        </ul>
+      </nav>
+    </aside>
 
-  <div id="requests"></div>
+    
+    <main class="main-content">
+      <header>
+        <h1>Pending Donation Requests</h1>
+        <div class="notification info">
+          You have <span id="pending-count">4</span> new donations pending approval.
+        </div>
+      </header>
 
-  <script>
-    async function loadRequests() {
-      const container = document.getElementById("requests");
-      container.innerHTML = "Loading...";
+     
+      <section class="requests-section">
+        <div id="requests" class="requests-container">
+          
+          <div class="loading">Loading donation requests...</div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-      const res = await fetch("/api/donation-requests");
-      const data = await res.json();
-
-      container.innerHTML = "";
-
-      if (!data.length) {
-        container.innerHTML = "<p>No pending donations.</p>";
-        return;
-      }
-
-      data.forEach((donation) => {
-        const div = document.createElement("div");
-        div.className = "card";
-
-        div.innerHTML = `
-          <h3>${donation.donorName}</h3>
-          <p><b>Category:</b> ${donation.category}</p>
-          <p><b>Type:</b> ${donation.type}</p>
-          <p><b>Size:</b> ${donation.size}</p>
-          <p><b>Condition:</b> ${donation.condition}</p>
-          <p><b>Description:</b> ${donation.description}</p>
-          <input id="reason-${donation.id}" placeholder="Reason if rejecting" />
-          <br><br>
-          <button onclick="approve(${donation.id})">Approve</button>
-          <button onclick="reject(${donation.id})">Reject</button>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-
-    async function approve(id) {
-      await fetch("/api/approve-donation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
-      });
-
-      alert("Approved!");
-      loadRequests();
-    }
-
-    async function reject(id) {
-      const reason = document.getElementById(`reason-${id}`).value;
-
-      await fetch("/api/reject-donation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, reason })
-      });
-
-      alert("Rejected!");
-      loadRequests();
-    }
-
-    loadRequests();
-  </script>
+  <script src="staff.js"></script>
 </body>
 </html>

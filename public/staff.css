@@ -1,120 +1,112 @@
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   font-family: "Segoe UI", Arial, sans-serif;
   background: #f9fafb;
   color: #333;
   margin: 0;
-  padding: 20px;
+  padding: 0;
+  min-height: 100vh;
 }
 
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+
+.sidebar {
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 25px 20px;
+  text-align: center;
+  background: #1a252f;
+  color: white;
+  border-bottom: 1px solid #34495e;
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 20px 0;
+  flex-grow: 1;
+}
+
+.nav-menu li {
+  margin: 0;
+}
+
+.nav-menu a {
+  color: #ecf0f1;
+  text-decoration: none;
+  padding: 15px 25px;
+  display: block;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  font-size: 0.95rem;
+}
+
+.nav-menu a:hover {
+  background: #34495e;
+  border-left: 4px solid #1a73e8;
+}
+
+.nav-menu a.active {
+  background: #1a73e8;
+  border-left: 4px solid #fff;
+}
+
+.nav-menu .logout {
+  margin-top: 20px;
+  border-top: 1px solid #34495e;
+  padding-top: 15px;
+  color: #e74c3c;
+}
+
+.nav-menu .logout:hover {
+  background: #c0392b;
+  color: white;
+}
+
+
+.main-content {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+}
+
+header {
+  margin-bottom: 30px;
+}
 
 h1 {
-  text-align: center;
   color: #2c3e50;
-  margin-bottom: 30px;
-  font-size: 2rem;
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-
-.card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-
-.card h3 {
-  margin-top: 0;
-  color: #1a73e8;
-  font-size: 1.2rem;
-}
-
-.card p {
-  margin: 6px 0;
-  line-height: 1.4;
-}
-
-
-.card input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  margin-top: 8px;
-}
-
-
-button {
-  padding: 8px 16px;
-  margin-right: 10px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-button[onclick^="approve"] {
-  background: #4caf50;
-  color: #fff;
-}
-
-
-button[onclick^="reject"] {
-  background: #e53935;
-  color: #fff;
-}
-
-.status {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-
-.status.pending {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-}
-
-
-.status.approved {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-
-.status.rejected {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-
+/* Notification Styles */
 .notification {
   padding: 12px 20px;
   border-radius: 6px;
   margin-bottom: 15px;
   font-size: 0.95rem;
+  display: inline-block;
 }
 
 .notification.success {
@@ -133,4 +125,212 @@ button[onclick^="reject"] {
   background: #cce5ff;
   color: #004085;
   border: 1px solid #b8daff;
+}
+
+
+.requests-section {
+  margin-top: 20px;
+}
+
+.requests-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+
+.card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.card p {
+  margin: 10px 0;
+  line-height: 1.5;
+  color: #555;
+}
+
+.card b {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Input Field */
+.reason-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin: 15px 0;
+  transition: border 0.2s;
+}
+
+.reason-input:focus {
+  outline: none;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  flex: 1;
+}
+
+.btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-approve {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-reject {
+  background: #e53935;
+  color: white;
+}
+
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.status-approved {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #666;
+  grid-column: 1 / -1;
+}
+
+.empty-state h3 {
+  color: #777;
+  margin-bottom: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .requests-container {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+  }
+  
+  .nav-menu {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+  }
+  
+  .nav-menu li {
+    flex: 1 0 auto;
+  }
+  
+  .nav-menu a {
+    padding: 12px 15px;
+    text-align: center;
+    border-left: none;
+    border-bottom: 4px solid transparent;
+  }
+  
+  .nav-menu a.active {
+    border-left: none;
+    border-bottom: 4px solid #fff;
+  }
+  
+  .nav-menu a:hover {
+    border-left: none;
+    border-bottom: 4px solid #1a73e8;
+  }
+  
+  .main-content {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .requests-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
 }
