@@ -1,89 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <style>
-    body { font-family: Arial; margin: 20px; }
-    h1 { margin-bottom: 15px; }
+<meta charset="UTF-8">
+<title>SustainWear Admin Dashboard</title>
 
-    .stat-grid {
-      display: flex; gap: 15px; flex-wrap: wrap;
-      margin-bottom: 25px;
-    }
-    .stat-card {
-      background: #f7f7f7; border: 1px solid #ddd;
-      padding: 15px 20px; border-radius: 6px;
-      min-width: 180px;
-    }
-    .stat-label { color:#555; font-size:0.85rem; }
-    .stat-value { font-size:1.8rem; font-weight:bold; }
+<link rel="stylesheet" href="admin-dashboard.css">
 
-    table { width:100%; border-collapse: collapse; margin-top:10px; }
-    th, td { border:1px solid #ddd; padding: 8px; text-align:left; }
-    th { background:#f2f2f2; }
-
-    button { padding:5px 10px; margin-left:5px; cursor:pointer; }
-  </style>
 </head>
 
 <body>
 
-<h1>Admin Dashboard</h1>
+<div class="layout">
 
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="stat-label">Total Users</div>
-    <div class="stat-value" id="statTotalUsers">0</div>
-  </div>
+    <!-- SIDE BAR -->
+    <aside class="sidebar">
+        <div class="sidebar-title">SustainWear Admin</div>
+        <ul>
+            <li class="active">Dashboard</li>
+            <li onclick="refreshAll()">Refresh</li>
+        </ul>
+    </aside>
 
-  <div class="stat-card">
-    <div class="stat-label">Donors</div>
-    <div class="stat-value" id="statTotalDonors">0</div>
-  </div>
+    <!-- MAIN CONTENT -->
+    <main class="content">
 
-  <div class="stat-card">
-    <div class="stat-label">Staff (approved)</div>
-    <div class="stat-value" id="statStaffApproved">0</div>
-  </div>
+        <h1>Admin Dashboard</h1>
 
-  <div class="stat-card">
-    <div class="stat-label">Staff (pending)</div>
-    <div class="stat-value" id="statStaffPending">0</div>
-  </div>
+        <!-- DASHBOARD CARDS -->
+        <div class="stats-grid">
 
-  <div class="stat-card">
-    <div class="stat-label">Total Donations</div>
-    <div class="stat-value" id="statTotalDonations">0</div>
-  </div>
+            <div class="stat-card">
+                <p class="label">Total Users</p>
+                <p class="value" id="statTotalUsers">0</p>
+            </div>
 
-  <div class="stat-card">
-    <div class="stat-label">Pending Donations</div>
-    <div class="stat-value" id="statDonationsPending">0</div>
-  </div>
+            <div class="stat-card">
+                <p class="label">Donors</p>
+                <p class="value" id="statTotalDonors">0</p>
+            </div>
+
+            <div class="stat-card">
+                <p class="label">Approved Staff</p>
+                <p class="value" id="statStaffApproved">0</p>
+            </div>
+
+            <div class="stat-card">
+                <p class="label">Pending Staff</p>
+                <p class="value" id="statStaffPending">0</p>
+            </div>
+
+            <div class="stat-card">
+                <p class="label">Total Donations</p>
+                <p class="value" id="statTotalDonations">0</p>
+            </div>
+
+            <div class="stat-card">
+                <p class="label">Pending Donations</p>
+                <p class="value" id="statDonationsPending">0</p>
+            </div>
+
+        </div>
+
+        <!-- USER TABLE -->
+        <h2>User Accounts</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
+
+        <!-- STAFF -->
+        <h2>Pending Staff Accounts</h2>
+        <ul id="staffList" class="list"></ul>
+
+        <!-- DONATIONS -->
+        <h2>Pending Donations</h2>
+        <ul id="donationList" class="list"></ul>
+
+    </main>
 </div>
 
-<h2>User Accounts</h2>
-<table>
-  <thead>
-    <tr>
-      <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th>
-    </tr>
-  </thead>
-  <tbody id="usersTableBody"></tbody>
-</table>
-
-<h2>Pending Staff Accounts</h2>
-<ul id="staffList"></ul>
-
-<h2>Pending Donations</h2>
-<ul id="donationList"></ul>
-
 <script>
+
+
 async function loadStats() {
   const res = await fetch("/admin/stats");
   const s = await res.json();
-
   document.getElementById("statTotalUsers").textContent = s.totalUsers;
   document.getElementById("statTotalDonors").textContent = s.totalDonors;
   document.getElementById("statStaffApproved").textContent = s.staffApproved;
@@ -95,10 +100,10 @@ async function loadStats() {
 async function loadUsers() {
   const res = await fetch("/admin/users");
   const users = await res.json();
-  const tbody = document.getElementById("usersTableBody");
-  tbody.innerHTML = "";
+  const body = document.getElementById("usersTableBody");
+  body.innerHTML = "";
   users.forEach(u => {
-    tbody.innerHTML += `
+    body.innerHTML += `
       <tr>
         <td>${u.id}</td>
         <td>${u.name}</td>
@@ -116,10 +121,10 @@ async function loadStaff() {
   list.innerHTML = "";
   staff.forEach(u => {
     list.innerHTML += `
-      <li>
+      <li class="list-item">
         <b>${u.name}</b> (${u.email})
         <button onclick="approveStaff(${u.id})">Approve</button>
-        <button onclick="rejectStaff(${u.id})">Reject</button>
+        <button class="danger" onclick="rejectStaff(${u.id})">Reject</button>
       </li>`;
   });
 }
@@ -147,19 +152,19 @@ async function loadDonations() {
   list.innerHTML = "";
   donations.forEach(d => {
     list.innerHTML += `
-      <li>
+      <li class="list-item">
         <b>${d.donor_name}</b> donated <b>${d.category} - ${d.subcategory}</b><br>
         Size: ${d.size}, Condition: ${d.condition}<br>
         Notes: ${d.description || "None"}<br>
         <button onclick="approveDonation(${d.id})">Approve</button>
-        <button onclick="rejectDonation(${d.id})">Reject</button>
+        <button class="danger" onclick="rejectDonation(${d.id})">Reject</button>
       </li>`;
   });
 }
 
 function approveDonation(id) {
   fetch("/api/approve-donation", {
-    method:"POST",
+    method: "POST",
     headers:{ "Content-Type":"application/json" },
     body: JSON.stringify({ id })
   }).then(refreshAll);
@@ -182,5 +187,6 @@ function refreshAll() {
 
 refreshAll();
 </script>
+
 </body>
 </html>
