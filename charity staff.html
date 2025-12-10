@@ -3,15 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Dashboard – Donation Requests</title>
-  <link rel="stylesheet" href="/styles/staff.css" />
-  <link rel="script" href="authhandlers.js" />
+  <title>SustainWear – Staff Dashboard</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="staff.css" />
 </head>
 <body>
-  <h1>Incoming Donation Requests</h1>
 
-  <div id="requests-container">
+  <header class="top-nav">
+    <div class="logo-title">
+      <img src="images/logo.png" alt="SustainWear logo" id="logo">
+      <span class="brand-name">SustainWear</span>
+    </div>
+
+    <nav class="top-menu">
+      <a href="home.html">Home</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <ul>
+        <li class="active">Pending donations</li>
+        <li>Approved donations</li>
+        <li>Inventory</li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div class="donation-box">
+        <h1>Staff dashboard</h1>
+        <p class="subtitle">
+          Review incoming donations from donors and approve or reject them.
+        </p>
+
+        <section class="history-section">
+          <h2>Pending donation requests</h2>
+
+          <div id="requests-container" class="donation-history-list">
+            <p>Loading pending donation requests...</p>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
+
+  <script src="authhandlers.js"></script>
 
   <script>
 async function loadRequests() {
@@ -19,7 +57,7 @@ async function loadRequests() {
   const requests = await res.json();
   const container = document.getElementById('requests-container');
   container.innerHTML = '';
-}
+
   data.forEach(request => {
     const card = document.createElement('div');
     card.className = 'request-card';
@@ -33,28 +71,36 @@ async function loadRequests() {
     <form class ="response-form">
       <input type="hidden" name="request_id" value="${request.id}" />
 
-<label>Decision:</label>
-      <select name="decision" required>
-        <option value="">Select</option>
-        <option value="accept">Accept</option>
-        <option value="decline">Decline</option>
-      </select>
+              <label>Decision:</label>
+              <select name="decision" required>
+                <option value="">Select</option>
+                <option value="accept">Accept</option>
+                <option value="decline">Decline</option>
+              </select>
 
-      <label>Reason: (if rejecting)</label>
-      <select name="reason">
-        <option value="">Select</option>
-        <option value="not_needed">Not Needed</option>
-        <option value="quality">Quality Concerns</option>
-        <option value="duplicate">Duplicate Item</option>
-        </select>
+              <label>Reason (if rejecting):</label>
+              <select name="reason">
+                <option value="">Select</option>
+                <option value="not_needed">Not needed</option>
+                <option value="quality">Quality concerns</option>
+                <option value="duplicate">Duplicate item</option>
+              </select>
 
-        <label>Custom messaage:</label>
-        <textarea name="custom_message" rows="3" placeholder="Optional custom message"></textarea>
+              <label>Custom message:</label>
+              <textarea
+                name="custom_message"
+                rows="3"
+                placeholder="Optional custom message to the donor"
+              ></textarea>
 
-        <button type="submit">Submit </button>
-    </form>
-    container.appendChild(card);
-         });
+              <button type="submit" class="submit-btn" style="margin-top:12px;">
+                Submit decision
+              </button>
+            </form>
+          `;
+
+          container.appendChild(card);
+        });
 
       document.querySelectorAll('.response-form').forEach(form => {
         form.addEventListener('submit', async (e) => {
@@ -79,6 +125,6 @@ async function loadRequests() {
       })
       loadRequests();
       </script>
-    
+
 </body>
 </html>
