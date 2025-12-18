@@ -193,6 +193,27 @@ app.post("/api/reject-donation", (req, res) => {
   );
 });
 
+app.get("/donor/history", (req, res) => {
+  const donor = req.query.donor;
+  if (!donor) {
+    return res.json([]);
+  }
+  db.all(
+    `SELECT * FROM donations
+     WHERE donor_name = ?
+     ORDER BY id DESC`,
+    [donor],
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.json([]);
+      }
+      res.json(rows || []);
+    }
+  );
+});
+
+
 // SERVE ADMIN PAGE
 
 app.get("/admin", (req, res) => {

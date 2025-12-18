@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SustainWear – Staff Dashboard</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="staff.css" />
 </head>
 <body>
   <header class="top-nav">
@@ -67,9 +66,11 @@ async function loadRequests() {
       card.className = 'request-card';
       card.innerHTML = `
         <h3>Donor: ${request.donor_name}</h3>
-        <p><strong>Item:</strong> ${request.item}</p>
-        <p><strong>Quantity:</strong> ${request.quantity}</p>
-        <p><strong>Message:</strong> ${request.message}</p>
+        <p><strong>Category:</strong> ${request.category} → ${request.subcategory}</p>
+        <p><strong>Size:</strong> ${request.size}</p>
+        <p><strong>Condition:</strong> ${request.condition}</p>
+        <p><strong>Notes:</strong> ${request.description || 'None'}</p>
+
         
         <form class="response-form">
           <input type="hidden" name="request_id" value="${request.id}" />
@@ -109,22 +110,35 @@ async function loadRequests() {
     document.querySelectorAll('.response-form').forEach(form => {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
+        const id = data.request_id;
+        const decision = data.decision;
 
-        try {
-          const res = await fetch('/api/respond', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          const result = await res.json();
-          alert(result.message);
-          loadRequests(); 
-        } catch (err) {
-          console.error(err);
-          alert('Failed to submit response.');
-        }
+        if (!decision) {
+      alert('Please select accept or decline.');
+      return;
+    }
+      const url =
+      decision === 'accept'
+        ? '/api/approve-donation'
+        : '/api/reject-donation';
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      alert('Decision submitted.');
+      loadRequests();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to submit response.');
+    }
+        
       });
     });
 
