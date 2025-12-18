@@ -3,30 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SustainWear Login</title>
+  <title>SustainWear - Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="auth-container">
-    <h1>Welcome back</h1>
-
-    <form id="loginForm">
-      <label for="email">Email</label>
-      <input type="email" id="email" required>
-
-      <label for="password">Password</label>
-      <input type="password" id="password" required>
-
-      <button type="submit">Log in</button>
-      <p class="switch-link">Don’t have an account?
-        <a href="signup.html">Sign up here</a>
-      </p>
-    </form>
-
-    <p id="loginMessage"></p>
+<!-- TOP NAVIGATION (GLOBAL STYLE) -->
+<header class="top-nav">
+  <div class="logo-title">
+    <img src="images/logo.png" id="logo" alt="SustainWear logo">
+    <span class="brand-name">SustainWear</span>
   </div>
 
-  <script src="auth.js"></script>
+  <nav class="top-menu">
+    <a href="signup.html">Sign Up</a>
+  </nav>
+</header>
+
+<!-- PAGE CONTENT -->
+<div class="main-content" style="display:flex; justify-content:center; margin-top:60px;">
+  
+  <div class="donation-box" style="max-width:400px; width:100%;">
+
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Log in to access your dashboard</p>
+
+    <form id="loginForm">
+
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="Enter your email">
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required placeholder="Enter your password">
+
+      <button type="submit" class="submit-btn" style="width:100%; margin-top:20px;">
+        Log In
+      </button>
+
+    </form>
+
+    <p id="loginMessage" style="margin-top:15px; font-weight:bold;"></p>
+
+    <p style="margin-top:20px;">
+      Don't have an account? 
+      <a href="signup.html" style="color:#2e7d32; font-weight:bold;">Sign up</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="auth.js"></script>
 </body>
 </html>

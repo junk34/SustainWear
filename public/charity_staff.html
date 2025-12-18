@@ -3,45 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sustain Wear - Staff Dashboard</title>
+  <title>SustainWear – Staff Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="staff.css" />
 </head>
 <body>
-  <div class="dashboard-container">
-    
+  <header class="top-nav">
+    <div class="logo-title">
+      <img src="images/logo.png" alt="SustainWear logo" id="logo">
+      <span class="brand-name">SustainWear</span>
+    </div>
+
+    <nav class="top-menu">
+      <a href="home.html">Home</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="layout">
     <aside class="sidebar">
-      <div class="logo">Sustain Wear</div>
-      <nav>
-        <ul class="nav-menu">
-          <li><a href="#" class="active">Manage donations</a></li>
-          <li><a href="#">Donors</a></li>
-          <li><a href="#">Inventory</a></li>
-          <li><a href="#">Distribution</a></li>
-          <li><a href="#">Reports & analytics</a></li>
-          <li><a href="#" class="logout">Logout</a></li>
-        </ul>
-      </nav>
+      <ul>
+        <li class="active">Pending donations</li>
+        <li>Approved donations</li>
+        <li>Inventory</li>
+      </ul>
     </aside>
 
-    
     <main class="main-content">
-      <header>
-        <h1>Pending Donation Requests</h1>
-        <div class="notification info">
-          You have <span id="pending-count">4</span> new donations pending approval.
-        </div>
-      </header>
+      <div class="donation-box">
+        <h1>Staff dashboard</h1>
+        <p class="subtitle">
+          Review incoming donations from donors and approve or reject them.
+        </p>
 
-     
-      <section class="requests-section">
-        <div id="requests" class="requests-container">
-          
-          <div class="loading">Loading donation requests...</div>
-        </div>
-      </section>
+        <section class="history-section">
+          <h2>Pending donation requests</h2>
+
+          <div id="requests-container" class="donation-history-list">
+            <p>Loading pending donation requests...</p>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
-  <script src="staff.js"></script>
+  <script src="authhandlers.js"></script>
+  
+  <script>
+async function loadRequests() {
+  try {
+    const res = await fetch('/api/donation-requests');
+    const requests = await res.json();
+    const container = document.getElementById('requests-container');
+    container.innerHTML = '';
+
+    if (!requests || requests.length === 0) {
+      container.innerHTML = '<p>No pending donation requests.</p>';
+      return;
+    }
+
+    requests.forEach(request => {
+      const card = document.createElement('div');
+      card.className = 'request-card';
+      card.innerHTML = `
+        <h3>Donor: ${request.donor_name}</h3>
+        <p><strong>Item:</strong> ${request.item}</p>
+        <p><strong>Quantity:</strong> ${request.quantity}</p>
+        <p><strong>Message:</strong> ${request.message}</p>
+        
+        <form class="response-form">
+          <input type="hidden" name="request_id" value="${request.id}" />
+          
+          <label>Decision:</label>
+          <select name="decision" required>
+            <option value="">Select</option>
+            <option value="accept">Accept</option>
+            <option value="decline">Decline</option>
+          </select>
+
+          <label>Reason (if rejecting):</label>
+          <select name="reason">
+            <option value="">Select</option>
+            <option value="not_needed">Not needed</option>
+            <option value="quality">Quality concerns</option>
+            <option value="duplicate">Duplicate item</option>
+          </select>
+
+          <label>Custom message:</label>
+          <textarea
+            name="custom_message"
+            rows="3"
+            placeholder="Optional custom message to the donor"
+          ></textarea>
+
+          <button type="submit" class="submit-btn" style="margin-top:12px;">
+            Submit decision
+          </button>
+        </form>
+      `;
+
+      container.appendChild(card);
+    });
+
+  
+    document.querySelectorAll('.response-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          const res = await fetch('/api/respond', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await res.json();
+          alert(result.message);
+          loadRequests(); 
+        } catch (err) {
+          console.error(err);
+          alert('Failed to submit response.');
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error('Error loading requests:', error);
+    document.getElementById('requests-container').innerHTML = 
+      '<p>Error loading donation requests. Please try again.</p>';
+  }
+}
+
+
+document.addEventListener('DOMContentLoaded', loadRequests);
+  </script>
 </body>
 </html>
