@@ -129,9 +129,8 @@ app.get("/admin/stats", (req, res) => {
   );
 });
 
-// ---------------------------------------------------
 // ADMIN – PENDING STAFF
-// ---------------------------------------------------
+
 app.get("/admin/pending-staff", (req, res) => {
   db.all(
     `SELECT id, name, email
@@ -194,11 +193,37 @@ app.post("/api/reject-donation", (req, res) => {
   );
 });
 
-// ---------------------------------------------------
 // SERVE ADMIN PAGE
-// ---------------------------------------------------
+
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public/admin.html"));
 });
 
+
+app.get("/admin/leaderboard", (req, res) => {
+  const result = {};
+
+  db.get(
+    `SELECT category, COUNT(*) as count
+     FROM donations
+     GROUP BY category
+     ORDER BY count DESC
+     LIMIT 1`,
+    (_, row) => {
+      result.topCategory = row?.category || "N/A";
+
+      db.get(
+        `SELECT size, COUNT(*) as count
+         FROM donations
+         GROUP BY size
+         ORDER BY count DESC
+         LIMIT 1`,
+        (_, row2) => {
+          result.topSize = row2?.size || "N/A";
+          res.json(result);
+        }
+      );
+    }
+  );
+});
 app.listen(PORT, () => console.log("http://localhost:" + PORT));

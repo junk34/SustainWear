@@ -3,107 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <title>SustainWear Admin Dashboard</title>
-
 <link rel="stylesheet" href="admin-dashboard.css">
-
 </head>
 
 <body>
 
 <div class="layout">
 
-    <!-- SIDE BAR -->
-    <aside class="sidebar">
-        <div class="sidebar-title">SustainWear Admin</div>
-        <ul>
-            <li class="active">Dashboard</li>
-            <li onclick="refreshAll()">Refresh</li>
-        </ul>
-    </aside>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">SustainWear Admin</div>
+    <ul>
+      <li onclick="showSection('dashboard')" class="active">Dashboard</li>
+      <li onclick="showSection('leaderboard')">Leaderboard</li>
+    </ul>
+  </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="content">
+  <!-- MAIN CONTENT -->
+  <main class="content">
 
-        <h1>Admin Dashboard</h1>
+    <!--DASHBOARD  -->
+    <section id="dashboard">
 
-        <!-- DASHBOARD CARDS -->
-        <div class="stats-grid">
+      <h1>Admin Dashboard</h1>
 
-            <div class="stat-card">
-                <p class="label">Total Users</p>
-                <p class="value" id="statTotalUsers">0</p>
-            </div>
-
-            <div class="stat-card">
-                <p class="label">Donors</p>
-                <p class="value" id="statTotalDonors">0</p>
-            </div>
-
-            <div class="stat-card">
-                <p class="label">Approved Staff</p>
-                <p class="value" id="statStaffApproved">0</p>
-            </div>
-
-            <div class="stat-card">
-                <p class="label">Pending Staff</p>
-                <p class="value" id="statStaffPending">0</p>
-            </div>
-
-            <div class="stat-card">
-                <p class="label">Total Donations</p>
-                <p class="value" id="statTotalDonations">0</p>
-            </div>
-
-            <div class="stat-card">
-                <p class="label">Pending Donations</p>
-                <p class="value" id="statDonationsPending">0</p>
-            </div>
-
+      <div class="stats-grid">
+        <div class="stat-card">
+          <p class="label">Total Users</p>
+          <p class="value" id="statTotalUsers">0</p>
         </div>
 
-        <!-- USER TABLE -->
-        <h2>User Accounts</h2>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="usersTableBody"></tbody>
-        </table>
+        <div class="stat-card">
+          <p class="label">Donors</p>
+          <p class="value" id="statTotalDonors">0</p>
+        </div>
 
-        <!-- STAFF -->
-        <h2>Pending Staff Accounts</h2>
-        <ul id="staffList" class="list"></ul>
+        <div class="stat-card">
+          <p class="label">Approved Staff</p>
+          <p class="value" id="statStaffApproved">0</p>
+        </div>
 
-        <!-- DONATIONS -->
-        <h2>Pending Donations</h2>
-        <ul id="donationList" class="list"></ul>
+        <div class="stat-card">
+          <p class="label">Pending Staff</p>
+          <p class="value" id="statStaffPending">0</p>
+        </div>
+      </div>
 
-    </main>
+      <h2>User Accounts</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+
+      <h2>Pending Staff Accounts</h2>
+      <ul id="staffList" class="list"></ul>
+
+    </section>
+
+    <!--  LEADERBOARD  -->
+    <section id="leaderboard" style="display:none;">
+
+      <h1>Donation Leaderboard</h1>
+
+      <div class="row">
+        <div class="col stat-card">
+          <div class="stat-label">Most Donated Category</div>
+          <div class="stat-value" id="topCategory">–</div>
+        </div>
+
+        <div class="col stat-card">
+          <div class="stat-label">Most Donated Size</div>
+          <div class="stat-value" id="topSize">–</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
 </div>
 
 <script>
-
-
 async function loadStats() {
   const res = await fetch("/admin/stats");
   const s = await res.json();
-  document.getElementById("statTotalUsers").textContent = s.totalUsers;
-  document.getElementById("statTotalDonors").textContent = s.totalDonors;
-  document.getElementById("statStaffApproved").textContent = s.staffApproved;
-  document.getElementById("statStaffPending").textContent = s.staffPending;
-  document.getElementById("statTotalDonations").textContent = s.totalDonations;
-  document.getElementById("statDonationsPending").textContent = s.donationsPending;
+
+  statTotalUsers.textContent = s.totalUsers;
+  statTotalDonors.textContent = s.totalDonors;
+  statStaffApproved.textContent = s.staffApproved;
+  statStaffPending.textContent = s.staffPending;
 }
 
 async function loadUsers() {
   const res = await fetch("/admin/users");
   const users = await res.json();
-  const body = document.getElementById("usersTableBody");
-  body.innerHTML = "";
+  usersTableBody.innerHTML = "";
   users.forEach(u => {
-    body.innerHTML += `
+    usersTableBody.innerHTML += `
       <tr>
         <td>${u.id}</td>
         <td>${u.name}</td>
@@ -117,14 +116,13 @@ async function loadUsers() {
 async function loadStaff() {
   const res = await fetch("/admin/pending-staff");
   const staff = await res.json();
-  const list = document.getElementById("staffList");
-  list.innerHTML = "";
+  staffList.innerHTML = "";
   staff.forEach(u => {
-    list.innerHTML += `
-      <li class="list-item">
+    staffList.innerHTML += `
+      <li>
         <b>${u.name}</b> (${u.email})
         <button onclick="approveStaff(${u.id})">Approve</button>
-        <button class="danger" onclick="rejectStaff(${u.id})">Reject</button>
+        <button onclick="rejectStaff(${u.id})">Reject</button>
       </li>`;
   });
 }
@@ -145,44 +143,24 @@ function rejectStaff(id) {
   }).then(refreshAll);
 }
 
-async function loadDonations() {
-  const res = await fetch("/api/donation-requests");
-  const donations = await res.json();
-  const list = document.getElementById("donationList");
-  list.innerHTML = "";
-  donations.forEach(d => {
-    list.innerHTML += `
-      <li class="list-item">
-        <b>${d.donor_name}</b> donated <b>${d.category} - ${d.subcategory}</b><br>
-        Size: ${d.size}, Condition: ${d.condition}<br>
-        Notes: ${d.description || "None"}<br>
-        <button onclick="approveDonation(${d.id})">Approve</button>
-        <button class="danger" onclick="rejectDonation(${d.id})">Reject</button>
-      </li>`;
-  });
+async function loadLeaderboard() {
+  const res = await fetch("/admin/leaderboard");
+  const data = await res.json();
+  topCategory.textContent = data.topCategory;
+  topSize.textContent = data.topSize;
 }
 
-function approveDonation(id) {
-  fetch("/api/approve-donation", {
-    method: "POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ id })
-  }).then(refreshAll);
-}
+function showSection(section) {
+  dashboard.style.display = section === "dashboard" ? "block" : "none";
+  leaderboard.style.display = section === "leaderboard" ? "block" : "none";
 
-function rejectDonation(id) {
-  fetch("/api/reject-donation", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ id })
-  }).then(refreshAll);
+  if (section === "leaderboard") loadLeaderboard();
 }
 
 function refreshAll() {
   loadStats();
   loadUsers();
   loadStaff();
-  loadDonations();
 }
 
 refreshAll();
