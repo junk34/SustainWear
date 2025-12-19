@@ -25,7 +25,8 @@ const SIM_KEY = "sustainwear_sim_state";
 const simState = {
   handover: {},
   tracking: {},
-  completed: {}
+  completed: {},
+  confirmed: {}
 };
 
 function loadSim() {
@@ -36,6 +37,7 @@ function loadSim() {
     simState.handover = parsed.handover || {};
     simState.tracking = parsed.tracking || {};
     simState.completed = parsed.completed || {};
+    simState.confirmed = parsed.confirmed || {};
   } catch {}
 }
 
@@ -237,8 +239,12 @@ async function loadManageDonations() {
   manageWrap.innerHTML = "<p>Loading approved donations...</p>";
 
   const rows = await fetchHistory();
-  const approved = rows.filter(d => String(d.status).toLowerCase() === "approved");
-
+  const approved = rows.filter
+  (d => { const id = normalizeId(d);
+  return (
+String(d.status).toLowerCase() === "approved" && 
+  !simState.confirmed[normalizeId(d)]);
+  });
   if (!approved.length) {
     manageWrap.innerHTML = "<p>No approved donations yet.</p>";
     return;
@@ -267,13 +273,13 @@ async function loadManageDonations() {
       <div class="handover-extra"></div>
 
       <div class="row" style="margin-top:10px;">
-        <button class="submit-btn mark-complete" type="button">Mark completed (demo)</button>
+        <button class="submit-btn confirm-handover" type="button">Confirm choice</button>
       </div>
     `;
 
     const select = card.querySelector(".handover");
     const extra = card.querySelector(".handover-extra");
-    const completeBtn = card.querySelector(".mark-complete");
+    const completeBtn = card.querySelector(".confirm-handover");
 
     if (current?.method) select.value = current.method;
     renderHandoverExtra(id, extra, current);
@@ -303,11 +309,14 @@ async function loadManageDonations() {
     });
 
     completeBtn.addEventListener("click", () => {
-      simState.completed[id] = true;
-      simState.tracking[id] = { status: "Delivered" };
+if (!simState.handover[id]){
+  alert ("Please select an option first before continuing");
+  return;
+}
+      simState.tracking[id] = { status: "Waiting" };
       saveSim();
       loadManageDonations();
-      loadInventory();
+      loadDistribution();
       loadDonationHistory();
     });
 
@@ -366,7 +375,7 @@ async function loadDistribution() {
   const rows = await fetchHistory();
   const active = rows.filter(d => {
     const id = normalizeId(d);
-    return !simState.completed[id] && !!simState.handover[id];
+    return !simState.confirmed[id] && !!simState.handover[id];
   });
 
   if (!active.length) {
@@ -386,13 +395,9 @@ async function loadDistribution() {
     box.className = "donation-card";
     box.innerHTML = `
       <h3>${safeText(d.category)} → ${safeText(d.subcategory)}</h3>
-      <p class="subtitle">Current status: <strong>${safeText(track.status)}</strong></p>
+      <p class="subtitle">Current status: <strong>${safeText(track.status || "waiting")}</strong></p>
 
-      <div class="row" style="gap:10px;">
-        <button type="button" class="submit-btn step" data-step="Waiting">Waiting</button>
-        <button type="button" class="submit-btn step" data-step="Collected">Collected</button>
-        <button type="button" class="submit-btn step" data-step="In transit">In transit</button>
-        <button type="button" class="submit-btn step" data-step="Delivered">Delivered</button>
+      <div 
       </div>
     `;
 
