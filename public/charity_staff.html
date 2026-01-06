@@ -35,122 +35,34 @@
           Review incoming donations from donors and approve or reject them.
         </p>
 
-        <section class="history-section">
+        <section id="pending-section"  class="history-section">
           <h2>Pending donation requests</h2>
 
           <div id="requests-container" class="donation-history-list">
             <p>Loading pending donation requests...</p>
           </div>
         </section>
+
+<section id="approved-section" class="history-section" style="display:none;">
+    <h2>Approved donations</h2>
+    <p class="subtitle">Only donations where the donor confirmed a handover option.</p>
+<div id="approved-container" class="donation-history-list">
+<p> loading approved donations</p>
       </div>
+</section>
+
+ <section id="inventory-section" class="history-section" style="display:none;">
+    <h2>Inventory</h2>
+    <p class="subtitle">Delivered donations show here.</p>
+    <div id="inventory-container" class="donation-history-list">
+      <p>Loading inventory...</p>
+    </div>
+  </section>
+
     </main>
   </div>
 
   <script src="authhandlers.js"></script>
-  
-  <script>
-async function loadRequests() {
-  try {
-    const res = await fetch('/api/donation-requests');
-    const requests = await res.json();
-    const container = document.getElementById('requests-container');
-    container.innerHTML = '';
-
-    if (!requests || requests.length === 0) {
-      container.innerHTML = '<p>No pending donation requests.</p>';
-      return;
-    }
-
-    requests.forEach(request => {
-      const card = document.createElement('div');
-      card.className = 'request-card';
-      card.innerHTML = `
-        <h3>Donor: ${request.donor_name}</h3>
-        <p><strong>Category:</strong> ${request.category} → ${request.subcategory}</p>
-        <p><strong>Size:</strong> ${request.size}</p>
-        <p><strong>Condition:</strong> ${request.condition}</p>
-        <p><strong>Notes:</strong> ${request.description || 'None'}</p>
-
-        
-        <form class="response-form">
-          <input type="hidden" name="request_id" value="${request.id}" />
-          
-          <label>Decision:</label>
-          <select name="decision" required>
-            <option value="">Select</option>
-            <option value="accept">Accept</option>
-            <option value="decline">Decline</option>
-          </select>
-
-          <label>Reason (if rejecting):</label>
-          <select name="reason">
-            <option value="">Select</option>
-            <option value="not_needed">Not needed</option>
-            <option value="quality">Quality concerns</option>
-            <option value="duplicate">Duplicate item</option>
-          </select>
-
-          <label>Custom message:</label>
-          <textarea
-            name="custom_message"
-            rows="3"
-            placeholder="Optional custom message to the donor"
-          ></textarea>
-
-          <button type="submit" class="submit-btn" style="margin-top:12px;">
-            Submit decision
-          </button>
-        </form>
-      `;
-
-      container.appendChild(card);
-    });
-
-  
-    document.querySelectorAll('.response-form').forEach(form => {
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        const id = data.request_id;
-        const decision = data.decision;
-
-        if (!decision) {
-      alert('Please select accept or decline.');
-      return;
-    }
-      const url =
-      decision === 'accept'
-        ? '/api/approve-donation'
-        : '/api/reject-donation';
-
-    try {
-      await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-
-      alert('Decision submitted.');
-      loadRequests();
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit response.');
-    }
-        
-      });
-    });
-
-  } catch (error) {
-    console.error('Error loading requests:', error);
-    document.getElementById('requests-container').innerHTML = 
-      '<p>Error loading donation requests. Please try again.</p>';
-  }
-}
-
-
-document.addEventListener('DOMContentLoaded', loadRequests);
-  </script>
+  <script src="staff_donations.js"></script>
 </body>
 </html>

@@ -166,7 +166,7 @@ app.post("/donate", (req, res) => {
       (donor_name, category, subcategory, size, condition, description)
      VALUES (?, ?, ?, ?, ?, ?)`,
     [d.donor_name, d.category, d.subcategory, d.size, d.condition, d.description],
-    () => res.json({ message: "Added" })
+    () => res.json({ message: "DONATION SUBMITTED" })
   );
 });
 
@@ -213,6 +213,18 @@ app.get("/donor/history", (req, res) => {
   );
 });
 
+app.get("/api/staff/all-donations", (req, res) => {
+  db.all(
+    `SELECT * FROM donations ORDER BY id DESC`,
+    (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.json([]);
+      }
+      res.json(rows || []);
+    }
+  );
+});
 
 // SERVE ADMIN PAGE
 

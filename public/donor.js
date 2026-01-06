@@ -254,6 +254,7 @@ String(d.status).toLowerCase() === "approved" &&
 
   approved.forEach(d => {
     const id = normalizeId(d);
+     if (!id) return;
     const current = simState.handover[id];
 
     const card = document.createElement("div");
@@ -295,12 +296,17 @@ String(d.status).toLowerCase() === "approved" &&
       }
 
       if (val === "dropoff") {
-        simState.handover[id] = { method: "dropoff", code: makeQR(), date: "", notes: "" };
+        simState.handover[id] = { 
+          donor: donorName(),
+          method: "dropoff", 
+          code: makeQR(), 
+          date: "", 
+          notes: "" };
         simState.tracking[id] = simState.tracking[id] || { status: "Waiting" };
       }
 
       if (val === "collection") {
-        simState.handover[id] = { method: "collection", code: "", date: "", notes: "" };
+        simState.handover[id] = { donor: donorName(), method: "collection", code: "", date: "", notes: "" };
         simState.tracking[id] = simState.tracking[id] || { status: "Waiting" };
       }
 
@@ -309,12 +315,15 @@ String(d.status).toLowerCase() === "approved" &&
     });
 
     completeBtn.addEventListener("click", () => {
-if (!simState.handover[id]){
-  alert ("Please select an option first before continuing");
-  return;
-}
+      if (!simState.handover[id]){
+         alert ("Please select an option first before continuing");
+          return;
+        }
+      simState.confirmed[id] = true;
       simState.tracking[id] = { status: "Waiting" };
       saveSim();
+
+      alert("Handover confirmed");
       loadManageDonations();
       loadDistribution();
       loadDonationHistory();
@@ -371,12 +380,16 @@ function renderHandoverExtra(id, extraEl, handover) {
 
 async function loadDistribution() {
   if (!distributionWrap) return;
+loadSim();
 
   const rows = await fetchHistory();
   const active = rows.filter(d => {
     const id = normalizeId(d);
-    return !simState.confirmed[id] && !!simState.handover[id];
-  });
+    return (simState.confirmed[id] && 
+    !!simState.handover[id] && 
+    !simState.completed[id]
+  );
+});
 
   if (!active.length) {
     distributionWrap.innerHTML = `<p>No items currently in distribution.</p>`;
@@ -387,6 +400,7 @@ async function loadDistribution() {
 
   active.forEach(d => {
     const id = normalizeId(d);
+     if (!id) return;
     const track = simState.tracking[id] || { status: "Waiting" };
     simState.tracking[id] = track;
     saveSim();
@@ -395,8 +409,9 @@ async function loadDistribution() {
     box.className = "donation-card";
     box.innerHTML = `
       <h3>${safeText(d.category)} → ${safeText(d.subcategory)}</h3>
-      <p class="subtitle">Current status: <strong>${safeText(track.status || "waiting")}</strong></p>
-
+      <p class="subtitle">HANDOVER <strong>${safeText(simState.handover[id]?.method)}</strong></p>
+    <p class="subtitle">
+    Status: <strong>${safeText(track.status)}</strong>
       <div 
       </div>
     `;
@@ -475,4 +490,15 @@ document.addEventListener("DOMContentLoaded", () => {
   loadManageDonations();
   loadDistribution();
   loadInventory();
+   window.addEventListener("storage", (e) => {
+    if (e.key !== SIM_KEY) return;
+
+    loadSim(); // re-read localStorage that staff just updated
+
+    // refresh donor UI
+    loadDonationHistory();
+    loadManageDonations();
+    loadDistribution();
+    loadInventory();
+   });
 });
