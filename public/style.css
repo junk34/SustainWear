@@ -346,3 +346,160 @@ textarea {
     border-bottom: 4px solid #2e7d32;
   }
 }
+
+
+.impact-banner{
+  margin-top: 16px;
+  padding: 22px 14px;                
+  border-radius: 18px;
+  background: #f6f7f6;
+  border: 1px solid #e7ece7;
+  font-size: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;                          
+  min-height: 300px;                  
+}
+.impact-title{
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.impact-title span{
+  font-weight: 600;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.impact-top{
+  display: flex;
+  flex-direction: column;            
+  align-items: center;
+  gap: 14px;
+}
+.impact-ring{
+  width: 82px;   
+  height: 82px;
+  border-radius: 50%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  margin: 6px 0 2px;
+  box-shadow: 0 6px 16px rgba(46,125,50,0.12);
+
+  background: conic-gradient(#2e7d32 calc(var(--p, 0) * 1%), #dfe7df 0);
+}
+
+.impact-ring::before{
+  content: "";
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f6f7f6;
+  border: 1px solid #e7ece7;
+  position: absolute;
+}
+
+.impact-ring-text{
+  position: relative;
+  font-weight: 900;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.impact-ring-sub{
+  position: relative;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 3px;
+}
+
+
+.impact-mini{
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;  
+  gap: 12px;
+}
+
+.impact-chip{
+  display: flex;
+  flex-direction: column;  
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  background: #ffffff;
+  border: 1px solid #e7ece7;
+  border-radius: 14px;
+  padding: 12px 10px;
+}
+
+.impact-chip .impact-value{
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.impact-chip .impact-label{
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 3px;
+}
+
+.impact-progress{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.impact-progress-label{
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.impact-bar{
+  height: 12px; 
+  border-radius: 999px;
+  background: #dfe7df;
+  overflow: hidden;
+  border: 1px solid #e7ece7;
+}
+
+.impact-bar-fill{
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #43a047, #2e7d32);
+  transition: width 0.6s ease;
+}
+
+
+
+
+.impact-label{
+  opacity: 0.75;
+}
+
+.impact-value{
+  font-weight: 800;
+}
+
+.sidebar{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;                          
+}
+
+.sidebar ul{
+  margin-bottom: 10px;
+}

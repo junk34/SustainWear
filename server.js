@@ -213,18 +213,6 @@ app.get("/donor/history", (req, res) => {
   );
 });
 
-app.get("/api/staff/all-donations", (req, res) => {
-  db.all(
-    `SELECT * FROM donations ORDER BY id DESC`,
-    (err, rows) => {
-      if (err) {
-        console.error(err);
-        return res.json([]);
-      }
-      res.json(rows || []);
-    }
-  );
-});
 
 // SERVE ADMIN PAGE
 

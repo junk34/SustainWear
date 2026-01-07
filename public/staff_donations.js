@@ -1,3 +1,5 @@
+const { request } = require("express");
+
 const SIM_KEY = "sustainwear_sim_state";
 let simState = { handover: {}, tracking: {}, completed: {}, confirmed: {} };
 function loadSim() {
@@ -55,7 +57,7 @@ async function loadApprovedDonations() {
     loadSim(); // refresh localStorage state
 
     const list = all.filter(d => {
-      const id = String(d.id);
+      const id = String(request.id);
       return (
         String(d.status).toLowerCase() === "approved" &&
         !!simState.confirmed?.[id] &&
@@ -104,7 +106,11 @@ async function loadApprovedDonations() {
       card.querySelector(".update-btn").addEventListener("click", () => {
         const newStatus = card.querySelector(".tracking-select").value;
 
-        simState.tracking[id] = { status: newStatus };
+        if (!simState.tracking) simState.tracking = {};
+        if (!simState.completed) simState.completed = {};
+
+        simState.tracking[id] = { ...(simState.tracking[id] || {}), status: newStatus };
+        
         if (newStatus === "Delivered") simState.completed[id] = true;
 
         saveSim();

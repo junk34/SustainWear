@@ -147,6 +147,7 @@ function showGroup(key) {
 
 async function loadDonationHistory() {
   if (!donationHistoryList) return;
+loadSim()
 
   if (!donorName()) {
     donationHistoryList.innerHTML = "<li>Please log in again.</li>";
@@ -154,7 +155,7 @@ async function loadDonationHistory() {
   }
 
   donationHistoryList.innerHTML = "<li>Loading your donation history...</li>";
-
+  
   const rows = await fetchHistory();
 
   if (!rows.length) {
@@ -178,6 +179,7 @@ async function loadDonationHistory() {
     `;
     donationHistoryList.appendChild(li);
   });
+   updateImpactBanner();
 }
 
 if (donationForm) {
@@ -235,7 +237,7 @@ if (donationForm) {
 
 async function loadManageDonations() {
   if (!manageWrap) return;
-
+loadSim();
   manageWrap.innerHTML = "<p>Loading approved donations...</p>";
 
   const rows = await fetchHistory();
@@ -327,6 +329,7 @@ String(d.status).toLowerCase() === "approved" &&
       loadManageDonations();
       loadDistribution();
       loadDonationHistory();
+       updateImpactBanner();
     });
 
     manageWrap.appendChild(card);
@@ -380,7 +383,6 @@ function renderHandoverExtra(id, extraEl, handover) {
 
 async function loadDistribution() {
   if (!distributionWrap) return;
-loadSim();
 
   const rows = await fetchHistory();
   const active = rows.filter(d => {
@@ -427,16 +429,18 @@ loadSim();
         loadInventory();
         loadDonationHistory();
         loadManageDonations();
+         updateImpactBanner();
       });
     });
 
     distributionWrap.appendChild(box);
+    
   });
 }
 
 async function loadInventory() {
   if (!inventoryWrap) return;
-
+loadSim();
   const rows = await fetchHistory();
   const completedRows = rows.filter(d => simState.completed[normalizeId(d)]);
 
@@ -446,22 +450,203 @@ async function loadInventory() {
   }
 
   inventoryWrap.innerHTML = "";
+  let totalCO2 = 0;
 
   completedRows.forEach(d => {
     const id = normalizeId(d);
     const handover = simState.handover[id];
     const tracking = simState.tracking[id];
+    const co2Savings = Number(calcCO2SavedKg(d.category, d.subcategory) || 0);
 
+    totalCO2 += co2Savings;
     const box = document.createElement("div");
     box.className = "donation-box";
     box.innerHTML = `
       <strong>${safeText(d.category)} → ${safeText(d.subcategory)}</strong><br>
       <span class="subtitle">Archived / Completed (demo)</span><br>
+      <span class="subtitle">CO₂ saved: <b>${co2Savings.toFixed(1)} kg</b></span><br>
       <span class="subtitle">Handover: ${handover ? safeText(handover.method) : "—"}</span><br>
       <span class="subtitle">Final status: ${tracking ? safeText(tracking.status) : "—"}</span>
     `;
     inventoryWrap.appendChild(box);
   });
+   updateImpactBanner();
+}
+
+
+function getItemWeightGrams(category, subcategory) {
+  const weightMap = {
+    tops: { "t-shirt": 150, shirt: 200, blouse: 120, "tank top": 80, default: 150 },
+    outerwear: { jacket: 450, coat: 500, hoodie: 350, default: 400 },
+    bottoms: { jeans: 500, trousers: 300, skirt: 180, shorts: 200, default: 300 },
+    shoes: { sneakers: 800, boots: 1200, sandals: 500, flats: 600, default: 800 }, // pair weights
+    accessories: { hat: 80, belt: 120, bag: 300, scarf: 100, gloves: 60, default: 150 }
+  };
+
+  const cat = weightMap[String(category || "").toLowerCase()];
+  if (!cat) return 200;
+  return cat[String(subcategory || "").toLowerCase()] || cat.default || 200;
+}
+
+function calcCO2SavedKg(category, subcategory) {
+  console.log(`calcCO2SavedKg called with:`, { category, subcategory });
+  
+  // Clothing weights in GRAMS - REALISTIC VALUES
+  const weightMap = {
+    'tops': {
+      't-shirt': 150,      // 0.15kg
+      'shirt': 200,        // 0.2kg
+      'blouse': 120,       // 0.12kg
+      'tank top': 80,      // 0.08kg
+      'default': 150
+    },
+    'outerwear': {
+      'jacket': 450,       // 0.45kg
+      'coat': 500,         // 0.5kg
+      'hoodie': 350,       // 0.35kg
+      'default': 400
+    },
+    'bottoms': {
+      'jeans': 500,        // 0.5kg
+      'trousers': 300,     // 0.3kg
+      'skirt': 180,        // 0.18kg
+      'default': 300
+    },
+    'shoes': {
+      'sneakers': 800,     // 0.8kg pair
+      'boots': 1200,       // 1.2kg pair
+      'sandals': 500,      // 0.5kg pair
+      'default': 800
+    },
+    'accessories': {
+      'hat': 80,           // 0.08kg
+      'belt': 120,         // 0.12kg
+      'bag': 300,          // 0.3kg
+      'default': 150
+    }
+  };
+  
+  const CO2_PER_KG_TEXTILE = 12;
+  const categoryData = weightMap[category];
+  
+  console.log(`Category data for ${category}:`, categoryData);
+  
+  if (!categoryData) {
+    console.log(`Category ${category} not found, using default`);
+    return parseFloat((0.2 * CO2_PER_KG_TEXTILE).toFixed(1));
+  }
+  
+  const weightGrams = categoryData[subcategory] || categoryData.default || 200;
+  const weightKg = weightGrams / 1000;
+  const co2Savings = weightKg * CO2_PER_KG_TEXTILE;
+  const result = parseFloat(co2Savings.toFixed(1));
+  
+  console.log(`Calculation: ${weightGrams}g = ${weightKg}kg × ${CO2_PER_KG_TEXTILE} = ${result} kg CO₂`);
+  
+  return result;
+}
+
+async function updateImpactBanner() {
+  console.log("=== updateImpactBanner() START ===");
+  
+  // Get ALL the elements from your HTML
+  const co2El = document.getElementById("impactCO2");
+  const treesEl = document.getElementById("impactTrees");
+  const percentEl = document.getElementById("impactPercent");
+  const progressTextEl = document.getElementById("impactProgressText");
+  const barFillEl = document.getElementById("impactBarFill");
+  const ringEl = document.getElementById("impactRing");
+  
+  console.log("Elements found:", { 
+    co2El: !!co2El, 
+    treesEl: !!treesEl,
+    percentEl: !!percentEl,
+    progressTextEl: !!progressTextEl,
+    barFillEl: !!barFillEl,
+    ringEl: !!ringEl
+  });
+
+  // Get donation history
+  console.log("Fetching donation history...");
+  const rows = await fetchHistory();
+  console.log("Total donations from server:", rows.length);
+  
+  let totalCO2 = 0;
+  let deliveredCount = 0;
+
+  // Calculate totals
+  rows.forEach(d => {
+    const id = normalizeId(d);
+    // Check if donation is completed
+    if (simState.completed && simState.completed[id]) {
+      deliveredCount++;
+      const co2 = calcCO2SavedKg(d.category, d.subcategory);
+      console.log(`Completed donation ${id}:`, {
+        category: d.category,
+        subcategory: d.subcategory,
+        co2: co2
+      });
+      totalCO2 += co2;
+    }
+  });
+
+  console.log("Calculated totals:", {
+    deliveredCount,
+    totalCO2,
+    simStateCompletedKeys: Object.keys(simState.completed || {})
+  });
+
+  // Calculate tree equivalent and progress
+  const treeEquiv = (totalCO2 / 21.77).toFixed(1);
+  const goal = 50; // 50kg goal from your HTML
+  const percent = Math.min((totalCO2 / goal) * 100, 100);
+  
+  console.log("Updating UI with:", {
+    totalCO2: totalCO2.toFixed(1),
+    treeEquiv,
+    percent: percent.toFixed(1) + "%"
+  });
+  
+  // Update ALL the elements - FIXED: No .totalCO2 property access!
+  if (co2El) co2El.textContent = totalCO2.toFixed(1); // FIXED LINE
+  if (treesEl) treesEl.textContent = treeEquiv;
+  if (percentEl) percentEl.textContent = `${percent.toFixed(0)}%`;
+  if (progressTextEl) progressTextEl.textContent = `${totalCO2.toFixed(1)} / ${goal}`; // FIXED LINE
+  
+  // Update progress bar
+  if (barFillEl) barFillEl.style.width = `${percent}%`;
+  
+  // Update the circular ring (using CSS custom property)
+  if (ringEl) ringEl.style.setProperty("--p", percent.toFixed(0));
+  
+  console.log("=== updateImpactBanner() END ===");
+  console.log("Impact banner updated:", { 
+    totalCO2: totalCO2.toFixed(1), 
+    deliveredCount,
+    treeEquiv,
+    percent: percent.toFixed(1) + "%"
+  });
+}
+
+
+function debugSimStateCompleted() {
+  console.log("=== DEBUG simState.completed ===");
+  console.log("simState.completed:", simState.completed);
+  console.log("Keys in simState.completed:", Object.keys(simState.completed || {}));
+  console.log("Values:", Object.entries(simState.completed || {}));
+  
+  // Check localStorage directly
+  const raw = localStorage.getItem(SIM_KEY);
+  console.log("Raw localStorage:", raw);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      console.log("Parsed completed from localStorage:", parsed.completed);
+    } catch (e) {
+      console.error("Error parsing localStorage:", e);
+    }
+  }
+  console.log("=== END DEBUG ===");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -490,12 +675,14 @@ document.addEventListener("DOMContentLoaded", () => {
   loadManageDonations();
   loadDistribution();
   loadInventory();
+  updateImpactBanner();
    window.addEventListener("storage", (e) => {
     if (e.key !== SIM_KEY) return;
 
     loadSim(); // re-read localStorage that staff just updated
 
-    // refresh donor UI
+    updateImpactBanner();
+
     loadDonationHistory();
     loadManageDonations();
     loadDistribution();
