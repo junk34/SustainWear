@@ -71,9 +71,7 @@ function normalizeId(row) {
 }
 
 async function fetchHistory() {
-  const name = donorName();
-  if (!name) return [];
-  const res = await fetch(`/donor/history?donor=${encodeURIComponent(name)}`);
+  const res = await fetch("/donor/history");
   if (!res.ok) return [];
   const data = await res.json();
   return Array.isArray(data) ? data : [];

@@ -503,3 +503,71 @@ textarea {
 .sidebar ul{
   margin-bottom: 10px;
 }
+
+
+/* ===== LOGOUT BUTTON STYLES ===== */
+#logoutBtn {
+  background: linear-gradient(135deg, #ff4444, #cc0000);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 20px;
+  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3);
+}
+
+#logoutBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(10, 117, 67, 0.4);
+  background: linear-gradient(135deg, #0f773e, #79b476);
+}
+
+#logoutBtn:active {
+  transform: translateY(0);
+}
+
+/* User display styles */
+#userDisplay {
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+}
+
+#userDisplay::before {
+  content: "👤";
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+/* Optional separator */
+.user-menu::before {
+  content: "";
+  height: 24px;
+  width: 1px;
+  background: #e0e0e0;
+  margin-right: 5px;
+}
+
+/* Make sure top-menu aligns properly */
+.top-menu {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}

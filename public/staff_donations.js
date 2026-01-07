@@ -1,4 +1,4 @@
-const { request } = require("express");
+const {request} = require("express");
 
 const SIM_KEY = "sustainwear_sim_state";
 let simState = { handover: {}, tracking: {}, completed: {}, confirmed: {} };
