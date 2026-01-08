@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const session = require("express-session");
+const seedDemoUsers = require("./seed");
+
 // create / open DB file
 const db = new sqlite3.Database(path.join(__dirname, "sustainwear.db"));
 
@@ -56,7 +58,9 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
   password TEXT,
   role TEXT,
   status TEXT
-)`);
+)`, () => {
+  seedDemoUsers(db);
+});
 
 db.run(`CREATE TABLE IF NOT EXISTS donations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
