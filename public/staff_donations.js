@@ -1,4 +1,3 @@
-const {request} = require("express");
 
 const SIM_KEY = "sustainwear_sim_state";
 let simState = { handover: {}, tracking: {}, completed: {}, confirmed: {} };
@@ -38,9 +37,23 @@ function showSection(name) {
 }
 // --- API ---
 async function fetchAllDonations() {
-  const res = await fetch("/api/staff/all-donations");
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
+  const res = await fetch("/api/staff/all-donations", { credentials: "include" });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("all-donations failed:", res.status, text.slice(0, 200));
+    throw new Error("Failed to load donations");
+  }
+
+  const text = await res.text();
+
+  try {
+    const data = JSON.parse(text);
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error("Expected JSON but got:", text.slice(0, 200));
+    throw e;
+  }
 }
 
 
@@ -54,10 +67,10 @@ async function loadApprovedDonations() {
 
   try {
     const all = await fetchAllDonations();
-    loadSim(); // refresh localStorage state
+    loadSim();
 
     const list = all.filter(d => {
-      const id = String(request.id);
+      const id = String(d.id);
       return (
         String(d.status).toLowerCase() === "approved" &&
         !!simState.confirmed?.[id] &&
@@ -110,11 +123,10 @@ async function loadApprovedDonations() {
         if (!simState.completed) simState.completed = {};
 
         simState.tracking[id] = { ...(simState.tracking[id] || {}), status: newStatus };
-        
+
         if (newStatus === "Delivered") simState.completed[id] = true;
 
         saveSim();
-
         loadApprovedDonations();
         loadInventory();
       });

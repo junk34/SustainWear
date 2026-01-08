@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const session = require("express-session");
+const seedDemoUsers = require("./seed");
+
 // create / open DB file
 const db = new sqlite3.Database(path.join(__dirname, "sustainwear.db"));
 
@@ -56,7 +58,9 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
   password TEXT,
   role TEXT,
   status TEXT
-)`);
+)`, () => {
+  seedDemoUsers(db);
+});
 
 db.run(`CREATE TABLE IF NOT EXISTS donations (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,6 +115,25 @@ app.post("/logout", (req, res) => {
     res.json({ success: true, message: "Logged out" });
   });
 });
+
+
+
+
+
+app.get("/api/staff/all-donations", (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "Not logged in" });
+
+  const role = req.session.user.role;
+  if (role !== "staff" && role !== "admin" && role !== "charity_staff") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  db.all("SELECT * FROM donations", [], (err, rows) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json(rows);
+  });
+});
+
 
 
 // ---------------------------------------------------
