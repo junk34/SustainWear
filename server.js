@@ -117,6 +117,25 @@ app.post("/logout", (req, res) => {
 });
 
 
+
+
+
+app.get("/api/staff/all-donations", (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "Not logged in" });
+
+  const role = req.session.user.role;
+  if (role !== "staff" && role !== "admin" && role !== "charity_staff") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  db.all("SELECT * FROM donations", [], (err, rows) => {
+    if (err) return res.status(500).json({ message: "DB error" });
+    res.json(rows);
+  });
+});
+
+
+
 // ---------------------------------------------------
 // SIGNUP
 // ---------------------------------------------------
