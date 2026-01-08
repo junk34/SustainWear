@@ -507,7 +507,7 @@ textarea {
 
 /* ===== LOGOUT BUTTON STYLES ===== */
 #logoutBtn {
-  background: linear-gradient(135deg, #ff4444, #cc0000);
+  background: linear-gradient(135deg, #0f773e, #1b5e20);
   color: white;
   border: none;
   border-radius: 8px;
@@ -517,7 +517,7 @@ textarea {
   cursor: pointer;
   transition: all 0.3s ease;
   margin-left: 20px;
-  box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3);
+  box-shadow: 0 2px 6px rgba(10, 117, 67, 0.4);
 }
 
 #logoutBtn:hover {
